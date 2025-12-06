@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Firebase credentials (لا تشارك هذا الملف!)
+firebase-key.json
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+

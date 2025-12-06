@@ -1,0 +1,39 @@
+name: shm_technician_app
+description: "تطبيق الفنيين - سهم"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  http: ^1.2.2
+  geolocator: ^13.0.1
+  google_maps_flutter: ^2.10.0
+  shared_preferences: ^2.2.2
+  url_launcher: ^6.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_icon.png"
+  adaptive_icon_background: "#00A65A"
+  adaptive_icon_foreground: "assets/images/app_icon.png"
+  remove_alpha_ios: true
+  min_sdk_android: 21
