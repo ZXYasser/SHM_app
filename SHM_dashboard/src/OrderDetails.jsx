@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { FiArrowRight, FiMapPin, FiTruck, FiFileText, FiCalendar, FiTag, FiX, FiTrash2, FiUser } from "react-icons/fi";
+import { API_URL } from "./config";
 
 export default function OrderDetails({ order, onBack, onUpdateStatus }) {
   const [updatingStatus, setUpdatingStatus] = useState(false);
@@ -17,7 +18,7 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
   const loadTechnicians = async () => {
     setLoadingTechnicians(true);
     try {
-      const res = await fetch("http://localhost:3000/technicians");
+      const res = await fetch(`${API_URL}/technicians`);
       if (res.ok) {
         const data = await res.json();
         setTechnicians(Array.isArray(data) ? data : []);
@@ -42,7 +43,7 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
 
     setAssigningTechnician(true);
     try {
-      const res = await fetch(`http://localhost:3000/requests/${order.id || order._id}`, {
+      const res = await fetch(`${API_URL}/requests/${order.id || order._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -113,7 +114,7 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
 
     setUpdatingStatus(true);
     try {
-      const res = await fetch(`http://localhost:3000/requests/${order.id || order._id}`, {
+      const res = await fetch(`${API_URL}/requests/${order.id || order._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
@@ -143,7 +144,7 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
       const orderId = order.id || order._id;
       console.log("🗑️ Deleting order with ID:", orderId);
       
-      const res = await fetch(`http://localhost:3000/requests/${orderId}`, {
+      const res = await fetch(`${API_URL}/requests/${orderId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -315,7 +316,7 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
                     if (!window.confirm("هل تريد إلغاء تعيين الفني من هذا الطلب؟")) return;
                     setAssigningTechnician(true);
                     try {
-                      const res = await fetch(`http://localhost:3000/requests/${order.id || order._id}`, {
+                      const res = await fetch(`${API_URL}/requests/${order.id || order._id}`, {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ technicianId: null }),

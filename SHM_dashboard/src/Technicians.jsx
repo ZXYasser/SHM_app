@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { FiUserPlus, FiTrash2, FiUsers, FiPhone, FiLock, FiRefreshCw } from "react-icons/fi";
+import { API_URL } from "./config";
 
 export default function Technicians() {
   const [techs, setTechs] = useState([]);
@@ -15,7 +16,7 @@ export default function Technicians() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("http://localhost:3000/technicians");
+      const res = await fetch(`${API_URL}/technicians`);
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
@@ -76,7 +77,7 @@ export default function Technicians() {
 
     try {
       console.log("🗑️ Deleting technician with ID:", id);
-      const res = await fetch(`http://localhost:3000/technicians/${id}`, {
+      const res = await fetch(`${API_URL}/technicians/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

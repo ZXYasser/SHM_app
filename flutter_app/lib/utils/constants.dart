@@ -1,21 +1,12 @@
-import 'package:flutter/foundation.dart';
-
 class AppConstants {
   // ================================
   // 🔧 API Configuration
   // ================================
 
   /// تحديد URL حسب المنصة
-  /// - Web: يستخدم localhost (لأن المتصفح لا يمكنه الوصول لـ IP محلي مباشرة)
-  /// - Mobile/Desktop: يستخدم IP الشبكة
+  /// Railway URL - يعمل على جميع المنصات
   static String get baseUrl {
-    if (kIsWeb) {
-      // Flutter Web - استخدم localhost
-      return 'http://localhost:3000';
-    } else {
-      // Mobile/Desktop - استخدم IP الشبكة
-      return 'http://10.202.97.38:3000';
-    }
+    return 'https://shmapp-production.up.railway.app';
   }
 
   /// (اختياري) في حال تشغيل التطبيق على المحاكي Android

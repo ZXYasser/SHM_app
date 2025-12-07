@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.shm_technician_app"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"  // Updated to fix plugin compatibility
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

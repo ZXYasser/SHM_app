@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { FiEye, FiRefreshCw, FiFilter, FiTrash2 } from "react-icons/fi";
+import { API_URL } from "./config";
 
 export default function Orders({ onOpenRequest }) {
   const [orders, setOrders] = useState([]);
@@ -13,7 +14,7 @@ export default function Orders({ onOpenRequest }) {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("http://localhost:3000/requests");
+      const res = await fetch(`${API_URL}/requests`);
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
@@ -35,7 +36,7 @@ export default function Orders({ onOpenRequest }) {
   // Load technicians
   const loadTechnicians = async () => {
     try {
-      const res = await fetch("http://localhost:3000/technicians");
+      const res = await fetch(`${API_URL}/technicians`);
       if (res.ok) {
         const data = await res.json();
         setTechnicians(Array.isArray(data) ? data : []);
@@ -58,7 +59,7 @@ export default function Orders({ onOpenRequest }) {
 
     try {
       console.log("🗑️ Deleting order with ID:", orderId);
-      const res = await fetch(`http://localhost:3000/requests/${orderId}`, {
+      const res = await fetch(`${API_URL}/requests/${orderId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

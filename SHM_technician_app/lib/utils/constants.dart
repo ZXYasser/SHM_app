@@ -1,17 +1,12 @@
-import 'package:flutter/foundation.dart';
-
 class AppConstants {
   // ================================
   // 🔧 API Configuration
   // ================================
 
   /// تحديد URL حسب المنصة
+  /// Railway URL - يعمل على جميع المنصات
   static String get baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:3000';
-    } else {
-      return 'http://10.202.97.38:3000';
-    }
+    return 'https://shmapp-production.up.railway.app';
   }
 
   // Endpoints
