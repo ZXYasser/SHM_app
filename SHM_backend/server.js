@@ -248,6 +248,45 @@ app.delete("/requests/:id", async (req, res) => {
   }
 });
 
+// حذف جميع الطلبات
+app.delete("/requests", async (req, res) => {
+  console.log(`🔍 DELETE /requests route hit! (Delete all requests)`);
+  try {
+    const snapshot = await db.collection("requests").get();
+    
+    if (snapshot.empty) {
+      return res.json({
+        success: true,
+        message: "لا توجد طلبات للحذف",
+        deletedCount: 0
+      });
+    }
+
+    const batch = db.batch();
+    let deletedCount = 0;
+
+    snapshot.forEach((doc) => {
+      batch.delete(doc.ref);
+      deletedCount++;
+    });
+
+    await batch.commit();
+
+    console.log(`✅ Deleted ${deletedCount} requests successfully`);
+    res.json({
+      success: true,
+      message: `تم حذف ${deletedCount} طلب بنجاح`,
+      deletedCount: deletedCount
+    });
+  } catch (err) {
+    console.error("❌ Error deleting all requests:", err);
+    res.status(500).json({
+      success: false,
+      error: err.message || "فشل في حذف الطلبات"
+    });
+  }
+});
+
 // ==============================
 // الفنيين – Firestore
 // ==============================

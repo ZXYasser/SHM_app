@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { FiEye, FiRefreshCw, FiFilter, FiTrash2 } from "react-icons/fi";
+import { FiEye, FiRefreshCw, FiFilter, FiTrash2, FiTrash } from "react-icons/fi";
 import { API_URL } from "./config";
 
 export default function Orders({ onOpenRequest }) {
@@ -96,6 +96,64 @@ export default function Orders({ onOpenRequest }) {
     }
   };
 
+  // Delete all orders
+  const deleteAllOrders = async () => {
+    if (orders.length === 0) {
+      alert("لا توجد طلبات للحذف");
+      return;
+    }
+
+    const confirmMessage = `هل أنت متأكد من حذف جميع الطلبات (${orders.length} طلب)؟\n\nهذه العملية لا يمكن التراجع عنها!`;
+    if (!window.confirm(confirmMessage)) return;
+
+    // تأكيد إضافي
+    const secondConfirm = window.prompt(
+      `للتأكيد، اكتب "حذف الكل" لحذف جميع الطلبات:`
+    );
+    
+    if (secondConfirm !== "حذف الكل") {
+      alert("تم إلغاء العملية");
+      return;
+    }
+
+    try {
+      console.log("🗑️ Deleting all orders...");
+      const res = await fetch(`${API_URL}/requests`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("📥 Delete all response status:", res.status);
+
+      // التحقق من نوع الـ response
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        console.error("❌ Non-JSON response:", text.substring(0, 200));
+        throw new Error("الخادم لم يعد استجابة صحيحة. تأكد من أن الخادم يعمل.");
+      }
+
+      const data = await res.json();
+      console.log("📥 Delete all response data:", data);
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to delete all orders");
+      }
+
+      if (data.success !== false) {
+        await loadOrders();
+        alert(data.message || `تم حذف ${data.deletedCount || orders.length} طلب بنجاح`);
+      } else {
+        throw new Error(data.error || "فشل في حذف الطلبات");
+      }
+    } catch (err) {
+      console.error("❌ Error deleting all orders:", err);
+      alert(`فشل في حذف جميع الطلبات: ${err.message}`);
+    }
+  };
+
   useEffect(() => {
     loadOrders();
     loadTechnicians();
@@ -142,14 +200,27 @@ export default function Orders({ onOpenRequest }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-gray-800">الطلبات</h1>
-        <button
-          onClick={loadOrders}
-          disabled={loading}
-          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
-        >
-          <FiRefreshCw className={loading ? "animate-spin" : ""} size={18} />
-          تحديث
-        </button>
+        <div className="flex items-center gap-3">
+          {orders.length > 0 && (
+            <button
+              onClick={deleteAllOrders}
+              disabled={loading}
+              className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition disabled:opacity-50 shadow-md hover:shadow-lg"
+              title="حذف جميع الطلبات"
+            >
+              <FiTrash className={loading ? "animate-spin" : ""} size={18} />
+              حذف الكل
+            </button>
+          )}
+          <button
+            onClick={loadOrders}
+            disabled={loading}
+            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+          >
+            <FiRefreshCw className={loading ? "animate-spin" : ""} size={18} />
+            تحديث
+          </button>
+        </div>
       </div>
 
       {/* Statistics Cards */}

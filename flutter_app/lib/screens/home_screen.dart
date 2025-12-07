@@ -17,28 +17,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int _currentCarouselIndex = 0;
   Timer? _carouselTimer;
 
-  // Carousel Ads Data - Light Pastel Colors
+  // Carousel Ads Data - Premium Modern Design
   final List<Map<String, dynamic>> _carouselAds = [
     {
-      'title': 'خدمة بنشر متنقل',
+      'title': 'خدمة سريعة وموثوقة',
       'subtitle': 'نصل إليك في أي مكان داخل المدينة المنورة',
-      'icon': Icons.build_circle_rounded,
-      'gradient': [Color(0xFFA5D6A7), Color(0xFFC8E6C9)],
-      'textColor': Color(0xFF2E7D32),
+      'icon': Icons.flash_on_rounded,
+      'badge': '24/7',
+      'gradient': [Color(0xFF00A65A), Color(0xFF00C853)],
     },
     {
-      'title': 'بطارية متنقلة',
-      'subtitle': 'تركيب بطارية جديدة عند موقعك',
-      'icon': Icons.battery_charging_full_rounded,
-      'gradient': [Color(0xFFFFCC80), Color(0xFFFFE0B2)],
-      'textColor': Color(0xFFE65100),
+      'title': 'فنيون محترفون',
+      'subtitle': 'فريق مدرب ومعتمد لخدمتك',
+      'icon': Icons.verified_rounded,
+      'badge': 'معتمد',
+      'gradient': [Color(0xFF00A65A), Color(0xFF00C853)],
     },
     {
-      'title': 'خدمة 24/7',
-      'subtitle': 'متاح على مدار الساعة لخدمتك',
-      'icon': Icons.access_time_filled_rounded,
-      'gradient': [Color(0xFF90CAF9), Color(0xFFBBDEFB)],
-      'textColor': Color(0xFF1565C0),
+      'title': 'أسعار منافسة',
+      'subtitle': 'أفضل الأسعار في السوق',
+      'icon': Icons.star_rounded,
+      'badge': 'عروض',
+      'gradient': [Color(0xFF00A65A), Color(0xFF00C853)],
     },
   ];
 
@@ -290,11 +290,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildAdCard(Map<String, dynamic> ad) {
-    final gradient = ad['gradient'] as List<Color>;
     final icon = ad['icon'] as IconData;
     final title = ad['title'] as String;
     final subtitle = ad['subtitle'] as String;
-    final textColor = ad['textColor'] as Color;
+    final badge = ad['badge'] as String;
+    final gradient = ad['gradient'] as List<Color>;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -304,83 +304,192 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           end: Alignment.bottomRight,
           colors: gradient,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: gradient[0].withOpacity(0.2),
+            color: gradient[0].withOpacity(0.4),
+            blurRadius: 25,
+            offset: const Offset(0, 12),
+            spreadRadius: -5,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 15,
-            offset: const Offset(0, 8),
-            spreadRadius: -3,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Row(
-          children: [
-            // Icon Section
-            Container(
-              width: 80,
-              height: 80,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Decorative elements
+          Positioned(
+            top: -40,
+            right: -40,
+            child: Container(
+              width: 120,
+              height: 120,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.6),
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.8),
-                  width: 2,
-                ),
+                color: Colors.white.withOpacity(0.15),
               ),
-              child: Icon(icon, color: textColor, size: 40),
             ),
-            const SizedBox(width: 20),
+          ),
+          Positioned(
+            bottom: -30,
+            left: -30,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.1),
+              ),
+            ),
+          ),
+          
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(22),
+            child: Row(
+              children: [
+                // Icon Section - Premium Design
+                Container(
+                  width: 75,
+                  height: 75,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.25),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.5),
+                      width: 2.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 40),
+                ),
+                const SizedBox(width: 20),
 
-            // Text Section
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 24,
+                // Text Section
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 21,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.4,
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white.withOpacity(0.95),
+                          fontWeight: FontWeight.w500,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Badge - Premium Design
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(25),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.5),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    badge,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: textColor,
                       letterSpacing: 0.5,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: textColor.withOpacity(0.8),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildIndicator(bool isActive) {
+    final color = const Color(AppConstants.primaryColorValue);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.symmetric(horizontal: 4),
-      width: isActive ? 24 : 8,
+      width: isActive ? 28 : 8,
       height: 8,
       decoration: BoxDecoration(
-        color: isActive ? Colors.grey[700] : Colors.grey[400],
+        color: isActive ? color : Colors.grey[300],
         borderRadius: BorderRadius.circular(4),
+        boxShadow: isActive
+            ? [
+                BoxShadow(
+                  color: color.withOpacity(0.4),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
     );
   }
 
   Widget _buildAmazingServicesSection(BuildContext context, Color color) {
+    // قائمة الخدمات - جميعها بنفس اللون الموحد
+    final List<Map<String, dynamic>> services = [
+      {
+        'title': AppConstants.serviceTire,
+        'subtitle': 'بنشر متنقل',
+        'icon': Icons.build_circle_rounded,
+      },
+      {
+        'title': AppConstants.serviceBattery,
+        'subtitle': 'بطارية متنقلة',
+        'icon': Icons.battery_charging_full_rounded,
+      },
+      {
+        'title': AppConstants.serviceElectrical,
+        'subtitle': 'خلل كهربائي',
+        'icon': Icons.electrical_services_rounded,
+      },
+      {
+        'title': AppConstants.serviceOther,
+        'subtitle': 'خلل آخر',
+        'icon': Icons.build_rounded,
+      },
+    ];
+
     return Container(
       margin: const EdgeInsets.only(top: 32, bottom: 16),
       child: Column(
@@ -417,7 +526,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     const Text(
                       'خدماتنا',
                       style: TextStyle(
-                        fontSize: 32,
+                        fontSize: 28,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1,
                       ),
@@ -427,9 +536,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 const SizedBox(height: 12),
                 Text(
                   'اختر الخدمة التي تحتاجها',
-
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     color: Colors.grey[600],
                     fontWeight: FontWeight.w600,
                   ),
@@ -438,49 +546,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
 
-          // Amazing Service Cards
+          // Services Grid - Centered 2x2 Grid
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              children: [
-                _buildAmazingServiceCard(
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(), // منع السحب في GridView نفسه
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, // عمودين
+                mainAxisSpacing: 16, // المسافة العمودية بين الصفوف
+                crossAxisSpacing: 16, // المسافة الأفقية بين البطاقات
+                childAspectRatio: 0.85, // نسبة العرض إلى الارتفاع
+              ),
+              itemCount: services.length,
+              itemBuilder: (context, index) {
+                final service = services[index];
+                return _buildCompactServiceCard(
                   context: context,
-                  title: AppConstants.serviceTire,
-                  subtitle: 'خدمة بنشر متنقل',
-                  description:
-                      'تبديل وإصلاح كفرات على الطريق داخل المدينة المنورة',
-                  icon: Icons.build_circle_rounded,
-                  color: Color(0xFF2E7D32),
-                  gradient: [
-                    Color(0xFF1B5E20),
-                    Color(0xFF2E7D32),
-                    Color(0xFF388E3C),
-                  ],
-                  iconGradient: [Colors.white, Colors.white.withOpacity(0.9)],
-                  index: 0,
-                  onTap: () => _openRequest(context, AppConstants.serviceTire),
-                ),
-                const SizedBox(height: 24),
-                _buildAmazingServiceCard(
-                  context: context,
-                  title: AppConstants.serviceBattery,
-                  subtitle: 'خدمة بطارية متنقلة',
-                  description: 'تركيب بطارية + فحص الشحن عند موقعك',
-                  icon: Icons.battery_charging_full_rounded,
-                  color: Color(0xFFE65100),
-                  gradient: [
-                    Color(0xFFBF360C),
-                    Color(0xFFE65100),
-                    Color(0xFFFF6F00),
-                  ],
-                  iconGradient: [Colors.white, Colors.white.withOpacity(0.9)],
-                  index: 1,
-                  onTap: () =>
-                      _openRequest(context, AppConstants.serviceBattery),
-                ),
-              ],
+                  title: service['title'] as String,
+                  subtitle: service['subtitle'] as String,
+                  icon: service['icon'] as IconData,
+                  onTap: () => _openRequest(context, service['title'] as String),
+                );
+              },
             ),
           ),
         ],
@@ -488,226 +578,143 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildAmazingServiceCard({
+  Widget _buildCompactServiceCard({
     required BuildContext context,
     required String title,
     required String subtitle,
-    required String description,
     required IconData icon,
-    required Color color,
-    required List<Color> gradient,
-    required List<Color> iconGradient,
-    required int index,
     required VoidCallback onTap,
   }) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: Duration(milliseconds: 600 + (index * 200)),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) {
-        return Transform.translate(
-          offset: Offset(0, 30 * (1 - value)),
-          child: Opacity(
-            opacity: value,
-            child: Transform.scale(
-              scale: 0.9 + (0.1 * value),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: onTap,
-                  borderRadius: BorderRadius.circular(32),
-                  child: Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: gradient,
-                      ),
-                      borderRadius: BorderRadius.circular(32),
-                      boxShadow: [
-                        BoxShadow(
-                          color: color.withOpacity(0.5),
-                          blurRadius: 30,
-                          offset: const Offset(0, 15),
-                          spreadRadius: -5,
-                        ),
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        // Animated Background Pattern
-                        ...List.generate(4, (i) {
-                          return Positioned(
-                            top: -50 + (i * 30),
-                            right: -50 + (i * 25),
-                            child: Container(
-                              width: 150 + (i * 20),
-                              height: 150 + (i * 20),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white.withOpacity(
-                                  0.08 - (i * 0.015),
-                                ),
-                              ),
-                            ),
-                          );
-                        }),
-
-                        // Main Content
-                        Padding(
-                          padding: const EdgeInsets.all(28),
-                          child: Row(
-                            children: [
-                              // Icon Section
-                              Container(
-                                width: 120,
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: iconGradient,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 25,
-                                      offset: const Offset(0, 10),
-                                    ),
-                                    BoxShadow(
-                                      color: Colors.white.withOpacity(0.3),
-                                      blurRadius: 15,
-                                      offset: const Offset(-5, -5),
-                                    ),
-                                  ],
-                                ),
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    // Glow effect
-                                    Container(
-                                      width: 100,
-                                      height: 100,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: color.withOpacity(0.1),
-                                      ),
-                                    ),
-                                    Icon(icon, color: color, size: 50),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(width: 24),
-
-                              // Text Section
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      subtitle,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white.withOpacity(0.9),
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      title,
-                                      style: const TextStyle(
-                                        fontSize: 26,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        letterSpacing: 0.8,
-                                        height: 1.2,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Text(
-                                      description,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white.withOpacity(0.85),
-                                        height: 1.5,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              // Arrow Icon
-                              Container(
-                                padding: const EdgeInsets.all(14),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.3),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.5),
-                                    width: 2,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(
-                                  Icons.arrow_back_ios_new_rounded,
-                                  color: Colors.white,
-                                  size: 22,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Bottom Decoration
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: Container(
-                            height: 8,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.white.withOpacity(0.3),
-                                  Colors.transparent,
-                                ],
-                              ),
-                              borderRadius: const BorderRadius.only(
-                                bottomLeft: Radius.circular(32),
-                                bottomRight: Radius.circular(32),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+    final color = const Color(AppConstants.primaryColorValue);
+    
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                color,
+                color.withOpacity(0.9),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.4),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+                spreadRadius: -5,
+              ),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Decorative circles
+              Positioned(
+                top: -20,
+                right: -20,
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.1),
                   ),
                 ),
               ),
-            ),
+              Positioned(
+                bottom: -15,
+                left: -15,
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.08),
+                  ),
+                ),
+              ),
+              
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Icon Section - Larger and more prominent
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.5),
+                          width: 2.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 15,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        icon,
+                        color: Colors.white,
+                        size: 38,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    
+                    // Title
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 0.4,
+                        height: 1.3,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    
+                    // Subtitle
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.95),
+                        fontWeight: FontWeight.w500,
+                        height: 1.2,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 

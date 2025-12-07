@@ -32,4 +32,6 @@ class AppConstants {
   // ================================
   static const String serviceTire = 'بنشر متنقل';
   static const String serviceBattery = 'بطارية متنقلة';
+  static const String serviceElectrical = 'خلل كهربائي';
+  static const String serviceOther = 'خلل آخر';
 }
