@@ -48,7 +48,7 @@ export default function Technicians() {
 
     setAdding(true);
     try {
-      const res = await fetch("http://localhost:3000/technicians", {
+      const res = await fetch(`${API_URL}/technicians`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim(), phone: phone.trim(), password: password.trim() }),
