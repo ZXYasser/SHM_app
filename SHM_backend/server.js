@@ -144,11 +144,16 @@ app.get("/requests", async (req, res) => {
                         new Date(data.createdAt.seconds * 1000).toISOString() : 
                         null;
       
-      return {
+      const result = {
         id: doc.id,
         ...data,
         createdAt: createdAt || data.createdAt,
       };
+      
+      // Log technicianId for debugging
+      console.log(`📋 Request ${doc.id} - technicianId: ${result.technicianId || 'NULL/UNDEFINED'}, status: ${result.status}`);
+      
+      return result;
     });
 
     console.log(`✅ Found ${list.length} requests`);
@@ -182,19 +187,30 @@ app.patch("/requests/:id", async (req, res) => {
       updateData.status = status;
     }
 
-    if (technicianId !== undefined) {
+    if (technicianId !== undefined && technicianId !== null && technicianId !== '') {
       updateData.technicianId = technicianId;
+      console.log(`👤 Setting technicianId to: ${technicianId} for request ${id}`);
       // إذا تم تعيين فني، قم بتغيير الحالة إلى "in_progress" تلقائيًا إذا لم يتم تحديد حالة أخرى
       if (technicianId && !status) {
         updateData.status = "in_progress";
       }
+    } else if (technicianId === null || technicianId === '') {
+      // إذا تم إرسال null أو string فارغ، قم بحذف technicianId من الطلب
+      updateData.technicianId = admin.firestore.FieldValue.delete();
+      console.log(`👤 Removing technicianId from request ${id}`);
     }
 
-    console.log(`📝 Updating request ${id}:`, updateData);
+    console.log(`📝 Updating request ${id}:`, JSON.stringify(updateData, null, 2));
 
     await db.collection("requests").doc(id).update(updateData);
 
-    console.log(`✅ Request ${id} updated successfully`);
+    // Verify the update by reading the document back
+    const updatedDoc = await db.collection("requests").doc(id).get();
+    const updatedData = updatedDoc.data();
+    console.log(`✅ Request ${id} updated successfully. Current data:`, {
+      technicianId: updatedData.technicianId,
+      status: updatedData.status
+    });
     res.json({
       success: true,
       message: "تم تحديث حالة الطلب بنجاح"
