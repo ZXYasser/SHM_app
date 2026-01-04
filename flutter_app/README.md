@@ -1,4 +1,4 @@
-# fazaa_app
+# SHM_APP
 
 A new Flutter project.
 

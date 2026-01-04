@@ -1,6 +1,6 @@
 {
-    "name": "fazaa_app",
-    "short_name": "fazaa_app",
+    "name": "SHM_APP",
+    "short_name": "SHM_APP",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#00A65A",

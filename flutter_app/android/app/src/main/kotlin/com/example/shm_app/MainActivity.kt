@@ -1,4 +1,4 @@
-package com.example.fazaa_app
+package com.example.shm_app
 
 import io.flutter.embedding.android.FlutterActivity
 
