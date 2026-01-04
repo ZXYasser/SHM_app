@@ -17,7 +17,7 @@ class AppConstants {
   // ================================
   // 🎨 App Colors
   // ================================
-  static const int primaryColorValue = 0xFF00A65A;
+  static const int primaryColorValue = 0xFF42A5F5; // أزرق فاتح
 
   // ================================
   // ℹ App Info

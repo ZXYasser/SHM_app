@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { FiEye, FiRefreshCw, FiFilter, FiTrash2, FiTrash } from "react-icons/fi";
 import { API_URL } from "./config";
 
-export default function Orders({ onOpenRequest }) {
+export default function Orders({ onOpenRequest, onRefreshReady }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,6 +20,14 @@ export default function Orders({ onOpenRequest }) {
       }
       const data = await res.json();
       if (Array.isArray(data)) {
+        // Log orders with technicianId for debugging
+        data.forEach(order => {
+          if (order.technicianId) {
+            console.log(`📋 Order ${order.id} has technicianId: ${order.technicianId}`);
+          } else {
+            console.log(`⚠️ Order ${order.id} has NO technicianId`);
+          }
+        });
         setOrders(data);
       } else {
         throw new Error("Expected array but got: " + typeof data);
@@ -36,21 +44,45 @@ export default function Orders({ onOpenRequest }) {
   // Load technicians
   const loadTechnicians = async () => {
     try {
+      console.log("🔄 Loading technicians...");
       const res = await fetch(`${API_URL}/technicians`);
       if (res.ok) {
         const data = await res.json();
-        setTechnicians(Array.isArray(data) ? data : []);
+        const techsArray = Array.isArray(data) ? data : [];
+        console.log(`✅ Loaded ${techsArray.length} technicians:`, techsArray.map(t => ({ id: t.id || t._id, name: t.name })));
+        setTechnicians(techsArray);
+      } else {
+        console.error("❌ Failed to load technicians, status:", res.status);
+        setTechnicians([]);
       }
     } catch (err) {
-      console.error("Error loading technicians:", err);
+      console.error("❌ Error loading technicians:", err);
+      setTechnicians([]);
     }
   };
 
   // Get technician name by ID
   const getTechnicianName = (techId) => {
-    if (!techId) return '-';
-    const tech = technicians.find(t => (t.id || t._id) === techId);
-    return tech ? tech.name : '-';
+    if (!techId) {
+      return 'غير معين';
+    }
+    
+    // If technicians list is empty, return placeholder
+    if (technicians.length === 0) {
+      return 'جاري التحميل...';
+    }
+    
+    const tech = technicians.find(t => {
+      const techIdToCompare = t.id || t._id;
+      return techIdToCompare === techId;
+    });
+    
+    if (!tech) {
+      console.warn(`⚠️ Technician with ID ${techId} not found. Available IDs:`, technicians.map(t => t.id || t._id));
+      return 'غير معين';
+    }
+    
+    return tech.name;
   };
 
   // Delete order
@@ -155,10 +187,26 @@ export default function Orders({ onOpenRequest }) {
   };
 
   useEffect(() => {
-    loadOrders();
-    loadTechnicians();
+    // Load technicians first, then orders
+    const initialize = async () => {
+      await loadTechnicians();
+      await loadOrders();
+    };
+    initialize();
+    
     // Auto-refresh every 10 seconds
-    const interval = setInterval(loadOrders, 10000);
+    const interval = setInterval(() => {
+      loadTechnicians();
+      loadOrders();
+    }, 10000);
+    
+    // Expose refresh function to parent
+    if (onRefreshReady) {
+      onRefreshReady(async () => {
+        await loadTechnicians();
+        await loadOrders();
+      });
+    }
     return () => clearInterval(interval);
   }, []);
 
@@ -215,7 +263,7 @@ export default function Orders({ onOpenRequest }) {
           <button
             onClick={loadOrders}
             disabled={loading}
-            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
           >
             <FiRefreshCw className={loading ? "animate-spin" : ""} size={18} />
             تحديث
@@ -237,7 +285,7 @@ export default function Orders({ onOpenRequest }) {
           <div className="text-sm opacity-90 mb-1">قيد التنفيذ</div>
           <div className="text-3xl font-bold">{stats.inProgress}</div>
         </div>
-        <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg">
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">
           <div className="text-sm opacity-90 mb-1">مكتملة</div>
           <div className="text-3xl font-bold">{stats.completed}</div>
         </div>
@@ -260,7 +308,7 @@ export default function Orders({ onOpenRequest }) {
                 onClick={() => setStatusFilter(filter.key)}
                 className={`px-4 py-2 rounded-lg transition ${
                   statusFilter === filter.key
-                    ? "bg-green-600 text-white"
+                    ? "bg-blue-600 text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
@@ -282,7 +330,7 @@ export default function Orders({ onOpenRequest }) {
       <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
         {loading ? (
           <div className="p-12 text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             <p className="mt-4 text-gray-600">جاري التحميل...</p>
           </div>
         ) : filteredOrders.length === 0 ? (
@@ -311,7 +359,7 @@ export default function Orders({ onOpenRequest }) {
                 {filteredOrders.map((order, index) => (
                   <tr
                     key={order.id || order._id || index}
-                    className="border-b hover:bg-green-50 transition-all duration-200"
+                    className="border-b hover:bg-blue-50 transition-all duration-200"
                   >
                     <td className="p-4 font-medium">{order.serviceType || 'غير محدد'}</td>
                     <td className="p-4">{order.carModel || 'غير محدد'}</td>
@@ -322,7 +370,7 @@ export default function Orders({ onOpenRequest }) {
                           ? 'bg-blue-100 text-blue-700' 
                           : 'bg-gray-100 text-gray-600'
                       }`}>
-                        {order.technicianId ? getTechnicianName(order.technicianId) : 'غير معين'}
+                        {getTechnicianName(order.technicianId)}
                       </span>
                     </td>
                     <td className="p-4">
@@ -351,7 +399,7 @@ export default function Orders({ onOpenRequest }) {
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => onOpenRequest && onOpenRequest(order)}
-                          className="bg-green-600 p-2.5 rounded-lg text-white hover:bg-green-700 transition shadow-sm hover:shadow-md"
+                          className="bg-blue-600 p-2.5 rounded-lg text-white hover:bg-blue-700 transition shadow-sm hover:shadow-md"
                           title="عرض التفاصيل"
                         >
                           <FiEye size={18} />

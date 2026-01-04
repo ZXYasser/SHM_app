@@ -24,21 +24,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       'subtitle': 'نصل إليك في أي مكان داخل المدينة المنورة',
       'icon': Icons.flash_on_rounded,
       'badge': '24/7',
-      'gradient': [Color(0xFF00A65A), Color(0xFF00C853)],
+      'gradient': [Color(0xFF42A5F5), Color(0xFF64B5F6)],
     },
     {
       'title': 'فنيون محترفون',
       'subtitle': 'فريق مدرب ومعتمد لخدمتك',
       'icon': Icons.verified_rounded,
       'badge': 'معتمد',
-      'gradient': [Color(0xFF00A65A), Color(0xFF00C853)],
+      'gradient': [Color(0xFF42A5F5), Color(0xFF64B5F6)],
     },
     {
       'title': 'أسعار منافسة',
       'subtitle': 'أفضل الأسعار في السوق',
       'icon': Icons.star_rounded,
       'badge': 'عروض',
-      'gradient': [Color(0xFF00A65A), Color(0xFF00C853)],
+      'gradient': [Color(0xFF42A5F5), Color(0xFF64B5F6)],
     },
   ];
 
@@ -196,7 +196,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               icon: Icons.verified_rounded,
               value: 'آمن',
               label: 'فنيون معتمدون',
-              color: Colors.green[700]!,
+              color: Colors.blue[700]!,
             ),
           ),
           Container(width: 1, height: 50, color: Colors.grey[200]),
@@ -484,6 +484,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         'icon': Icons.electrical_services_rounded,
       },
       {
+        'title': AppConstants.serviceAC,
+        'subtitle': 'إصلاح تكييف',
+        'icon': Icons.ac_unit_rounded,
+      },
+      {
+        'title': AppConstants.serviceOil,
+        'subtitle': 'تغيير زيت',
+        'icon': Icons.oil_barrel_rounded,
+      },
+      {
+        'title': AppConstants.serviceMechanic,
+        'subtitle': 'ميكانيكا',
+        'icon': Icons.precision_manufacturing_rounded,
+      },
+      {
+        'title': AppConstants.serviceKey,
+        'subtitle': 'مفتاح',
+        'icon': Icons.vpn_key_rounded,
+      },
+      {
         'title': AppConstants.serviceOther,
         'subtitle': 'خلل آخر',
         'icon': Icons.build_rounded,
@@ -548,27 +568,95 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
           const SizedBox(height: 24),
 
-          // Services Grid - Centered 2x2 Grid
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(), // منع السحب في GridView نفسه
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, // عمودين
-                mainAxisSpacing: 16, // المسافة العمودية بين الصفوف
-                crossAxisSpacing: 16, // المسافة الأفقية بين البطاقات
-                childAspectRatio: 0.85, // نسبة العرض إلى الارتفاع
-              ),
-              itemCount: services.length,
-              itemBuilder: (context, index) {
-                final service = services[index];
-                return _buildCompactServiceCard(
-                  context: context,
-                  title: service['title'] as String,
-                  subtitle: service['subtitle'] as String,
-                  icon: service['icon'] as IconData,
-                  onTap: () => _openRequest(context, service['title'] as String),
+          // Services - Horizontal Scroll with 2 Rows
+          SizedBox(
+            height: 250, // ارتفاع صفين من المربعات (زيادة لتجنب overflow)
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: (services.length / 4).ceil(), // عدد المجموعات (كل مجموعة 4 خدمات = صفين)
+              itemBuilder: (context, groupIndex) {
+                final startIndex = groupIndex * 4;
+                final endIndex = (startIndex + 4 < services.length) ? startIndex + 4 : services.length;
+                final groupServices = services.sublist(startIndex, endIndex);
+                
+                return Container(
+                  width: MediaQuery.of(context).size.width * 0.85, // عرض المجموعة
+                  margin: EdgeInsets.only(right: groupIndex < (services.length / 4).ceil() - 1 ? 14 : 0),
+                  child: Column(
+                    children: [
+                      // الصف الأول
+                      Expanded(
+                        child: Row(
+                          children: [
+                            if (groupServices.length > 0)
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 7, right: 7, bottom: 7),
+                                  child: _buildCompactServiceCard(
+                                    context: context,
+                                    title: groupServices[0]['title'] as String,
+                                    subtitle: groupServices[0]['subtitle'] as String,
+                                    icon: groupServices[0]['icon'] as IconData,
+                                    onTap: () => _openRequest(context, groupServices[0]['title'] as String),
+                                  ),
+                                ),
+                              ),
+                            if (groupServices.length > 1)
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 7, right: 7, bottom: 7),
+                                  child: _buildCompactServiceCard(
+                                    context: context,
+                                    title: groupServices[1]['title'] as String,
+                                    subtitle: groupServices[1]['subtitle'] as String,
+                                    icon: groupServices[1]['icon'] as IconData,
+                                    onTap: () => _openRequest(context, groupServices[1]['title'] as String),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      // الصف الثاني
+                      Expanded(
+                        child: Row(
+                          children: [
+                            if (groupServices.length > 2)
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 7, right: 7, top: 7),
+                                  child: _buildCompactServiceCard(
+                                    context: context,
+                                    title: groupServices[2]['title'] as String,
+                                    subtitle: groupServices[2]['subtitle'] as String,
+                                    icon: groupServices[2]['icon'] as IconData,
+                                    onTap: () => _openRequest(context, groupServices[2]['title'] as String),
+                                  ),
+                                ),
+                              ),
+                            if (groupServices.length > 3)
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 7, right: 7, top: 7),
+                                  child: _buildCompactServiceCard(
+                                    context: context,
+                                    title: groupServices[3]['title'] as String,
+                                    subtitle: groupServices[3]['subtitle'] as String,
+                                    icon: groupServices[3]['icon'] as IconData,
+                                    onTap: () => _openRequest(context, groupServices[3]['title'] as String),
+                                  ),
+                                ),
+                              ),
+                            // إذا كانت الخدمات أقل من 4، نضيف مساحة فارغة
+                            if (groupServices.length < 4)
+                              Expanded(child: Container()),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
@@ -591,7 +679,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -602,7 +690,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 color.withOpacity(0.9),
               ],
             ),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
                 color: color.withOpacity(0.4),
@@ -619,13 +707,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           child: Stack(
             children: [
-              // Decorative circles
+              // Decorative circles - أصغر بكثير
               Positioned(
-                top: -20,
-                right: -20,
+                top: -10,
+                right: -10,
                 child: Container(
-                  width: 80,
-                  height: 80,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white.withOpacity(0.1),
@@ -633,11 +721,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
               Positioned(
-                bottom: -15,
-                left: -15,
+                bottom: -8,
+                left: -8,
                 child: Container(
-                  width: 60,
-                  height: 60,
+                  width: 30,
+                  height: 30,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white.withOpacity(0.08),
@@ -647,66 +735,76 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               
               // Content
               Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Icon Section - Larger and more prominent
+                    // Icon Section
                     Container(
-                      width: 72,
-                      height: 72,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: Colors.white.withOpacity(0.5),
-                          width: 2.5,
+                          width: 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 15,
-                            offset: const Offset(0, 6),
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
                       child: Icon(
                         icon,
                         color: Colors.white,
-                        size: 38,
+                        size: 22,
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(width: 10),
                     
-                    // Title
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 0.4,
-                        height: 1.3,
+                    // Text Section
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Title
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 0.2,
+                              height: 1.2,
+                            ),
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 3),
+                          
+                          // Subtitle
+                          Text(
+                            subtitle,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.white.withOpacity(0.95),
+                              fontWeight: FontWeight.w500,
+                              height: 1.1,
+                            ),
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 6),
-                    
-                    // Subtitle
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.white.withOpacity(0.95),
-                        fontWeight: FontWeight.w500,
-                        height: 1.2,
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -760,7 +858,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             icon: Icons.shield_rounded,
             title: 'فنيون محترفون',
             description: 'فريق مدرب ومعتمد',
-            color: Colors.green[700]!,
+            color: Colors.blue[700]!,
           ),
           const SizedBox(height: 16),
           _buildFeatureItem(

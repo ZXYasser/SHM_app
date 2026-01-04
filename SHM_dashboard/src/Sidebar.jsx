@@ -21,7 +21,7 @@ export default function Sidebar({ onNavigate, currentPage, onLogout }) {
       dir="rtl"
       className={`${
         open ? "w-64" : "w-20"
-      } bg-gradient-to-b from-green-700 to-green-600 text-white min-h-screen p-4 transition-all duration-300 shadow-2xl flex flex-col`}
+      } bg-gradient-to-b from-blue-700 to-blue-600 text-white min-h-screen p-4 transition-all duration-300 shadow-2xl flex flex-col`}
     >
       {/* Logo + Toggle */}
       <div className="flex items-center justify-between mb-10">
@@ -30,7 +30,7 @@ export default function Sidebar({ onNavigate, currentPage, onLogout }) {
           open ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}>
           <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-            <span className="text-green-700 font-bold text-xl">س</span>
+            <span className="text-blue-700 font-bold text-xl">س</span>
           </div>
           <h1 className="text-2xl font-bold">
             سهم
@@ -40,7 +40,7 @@ export default function Sidebar({ onNavigate, currentPage, onLogout }) {
         {/* زر القائمة */}
         <button 
           onClick={() => setOpen(!open)}
-          className="p-2 hover:bg-green-600 rounded-lg transition"
+          className="p-2 hover:bg-blue-600 rounded-lg transition"
         >
           <FiMenu size={22} />
         </button>
@@ -56,11 +56,11 @@ export default function Sidebar({ onNavigate, currentPage, onLogout }) {
               onClick={() => onNavigate(item.key)}
               className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-all duration-200 ${
                 isActive 
-                  ? "bg-white text-green-700 shadow-lg" 
-                  : "hover:bg-green-600 hover:bg-opacity-50"
+                  ? "bg-white text-blue-700 shadow-lg" 
+                  : "hover:bg-blue-600 hover:bg-opacity-50"
               }`}
             >
-              <span className={isActive ? "text-green-700" : ""}>{item.icon}</span>
+              <span className={isActive ? "text-blue-700" : ""}>{item.icon}</span>
 
               {/* الاختفاء عند الإغلاق */}
               <span
@@ -78,7 +78,7 @@ export default function Sidebar({ onNavigate, currentPage, onLogout }) {
       {/* تسجيل الخروج */}
       <div
         onClick={onLogout}
-        className="flex items-center gap-3 p-3 cursor-pointer hover:bg-red-600 rounded-lg transition mt-auto border-t border-green-600 pt-4"
+        className="flex items-center gap-3 p-3 cursor-pointer hover:bg-red-600 rounded-lg transition mt-auto border-t border-blue-600 pt-4"
       >
         <FiLogOut size={20} />
         {open && <span className="text-lg">تسجيل الخروج</span>}

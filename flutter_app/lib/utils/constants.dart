@@ -19,7 +19,7 @@ class AppConstants {
   // ================================
   // 🎨 App Colors
   // ================================
-  static const int primaryColorValue = 0xFF00A65A;
+  static const int primaryColorValue = 0xFF42A5F5; // أزرق فاتح
 
   // ================================
   // ℹ App Info
@@ -34,4 +34,8 @@ class AppConstants {
   static const String serviceBattery = 'بطارية متنقلة';
   static const String serviceElectrical = 'خلل كهربائي';
   static const String serviceOther = 'خلل آخر';
+  static const String serviceAC = 'إصلاح تكييف';
+  static const String serviceOil = 'تغيير زيت';
+  static const String serviceMechanic = 'ميكانيكا';
+  static const String serviceKey = 'مفتاح';
 }

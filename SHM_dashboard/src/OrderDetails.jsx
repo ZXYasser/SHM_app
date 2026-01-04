@@ -43,21 +43,45 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
 
     setAssigningTechnician(true);
     try {
-      const res = await fetch(`${API_URL}/requests/${order.id || order._id}`, {
+      const orderId = order.id || order._id;
+      
+      // Validate technicianId
+      if (!selectedTechnicianId || selectedTechnicianId.trim() === '') {
+        alert("يرجى اختيار فني صحيح");
+        setAssigningTechnician(false);
+        return;
+      }
+      
+      const requestBody = { 
+        technicianId: selectedTechnicianId.trim(),
+        status: order.status === 'new' ? 'in_progress' : order.status
+      };
+      
+      console.log("🔧 Assigning technician:", {
+        orderId,
+        technicianId: selectedTechnicianId,
+        technicianIdType: typeof selectedTechnicianId,
+        technicianIdLength: selectedTechnicianId?.length,
+        requestBody: JSON.stringify(requestBody)
+      });
+      
+      const res = await fetch(`${API_URL}/requests/${orderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          technicianId: selectedTechnicianId,
-          status: order.status === 'new' ? 'in_progress' : order.status
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      const responseData = await res.json();
+      console.log("📥 Response from server:", responseData);
+
       if (res.ok) {
+        console.log("✅ Technician assigned successfully");
         alert("تم تعيين الفني للطلب بنجاح");
         if (onUpdateStatus) onUpdateStatus();
         onBack();
       } else {
-        alert("فشل تعيين الفني");
+        console.error("❌ Failed to assign technician:", responseData);
+        alert("فشل تعيين الفني: " + (responseData.error || "خطأ غير معروف"));
       }
     } catch (err) {
       console.error("Error assigning technician:", err);
@@ -217,7 +241,7 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
           {/* Order Details Card */}
           <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <FiFileText className="text-green-600" />
+              <FiFileText className="text-blue-600" />
               معلومات الطلب
             </h3>
             <div className="space-y-4">
@@ -273,7 +297,7 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
           {/* Assign Technician Card */}
           <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <FiUser className="text-green-600" />
+              <FiUser className="text-blue-600" />
               تعيين فني للطلب
             </h3>
             <div className="space-y-4">
@@ -283,7 +307,7 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
                 </label>
                 {loadingTechnicians ? (
                   <div className="text-center py-4">
-                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                     <p className="mt-2 text-sm text-gray-500">جاري التحميل...</p>
                   </div>
                 ) : technicians.length === 0 ? (
@@ -292,7 +316,7 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
                   <select
                     value={selectedTechnicianId}
                     onChange={(e) => setSelectedTechnicianId(e.target.value)}
-                    className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">-- اختر فني --</option>
                     {technicians.map((tech) => (
@@ -306,7 +330,7 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
               <button
                 onClick={assignTechnician}
                 disabled={assigningTechnician || !selectedTechnicianId || loadingTechnicians}
-                className="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 {assigningTechnician ? 'جاري التعيين...' : 'تعيين الفني للطلب'}
               </button>
@@ -344,7 +368,7 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
           {/* Location Card */}
           <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <FiMapPin className="text-green-600" />
+              <FiMapPin className="text-blue-600" />
               الموقع
             </h3>
             <div className="space-y-3">
@@ -358,7 +382,7 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
                 href={mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition mt-2"
+                className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition mt-2"
               >
                 <FiMapPin size={18} />
                 فتح في خرائط Google
@@ -385,7 +409,7 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
                     <button
                       onClick={() => updateStatus('completed')}
                       disabled={updatingStatus}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
                     >
                       {updatingStatus ? 'جاري التحديث...' : 'إكمال الطلب'}
                     </button>

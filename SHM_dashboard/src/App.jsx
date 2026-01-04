@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Login from "./Login";
 import Sidebar from "./Sidebar";
 import Orders from "./Orders";
@@ -9,6 +9,7 @@ export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [page, setPage] = useState("orders");
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const refreshOrdersRef = useRef(null);
 
   // Show login if not logged in
   if (!loggedIn) {
@@ -35,7 +36,10 @@ export default function App() {
             onBack={() => setSelectedOrder(null)}
             onUpdateStatus={() => {
               setSelectedOrder(null);
-              // Orders component will auto-refresh
+              // Refresh orders list
+              if (refreshOrdersRef.current) {
+                refreshOrdersRef.current();
+              }
             }}
           />
         ) : (
@@ -44,6 +48,9 @@ export default function App() {
             {page === "orders" && (
               <Orders 
                 onOpenRequest={setSelectedOrder}
+                onRefreshReady={(refreshFn) => {
+                  refreshOrdersRef.current = refreshFn;
+                }}
               />
             )}
 

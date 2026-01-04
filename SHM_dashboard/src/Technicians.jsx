@@ -135,13 +135,13 @@ export default function Technicians() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-          <FiUsers className="text-green-600" size={32} />
+          <FiUsers className="text-blue-600" size={32} />
           إدارة الفنيين
         </h2>
         <button
           onClick={loadTechnicians}
           disabled={loading}
-          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
         >
           <FiRefreshCw className={loading ? "animate-spin" : ""} size={18} />
           تحديث
@@ -156,9 +156,9 @@ export default function Technicians() {
       )}
 
       {/* Add Technician Card */}
-      <div className="bg-gradient-to-br from-green-50 to-white rounded-xl shadow-lg p-6 mb-8 border border-green-100">
+      <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-lg p-6 mb-8 border border-blue-100">
         <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
-          <FiUserPlus className="text-green-600" size={24} />
+          <FiUserPlus className="text-blue-600" size={24} />
           إضافة فني جديد
         </h3>
 
@@ -200,7 +200,7 @@ export default function Technicians() {
         <button
           onClick={addTechnician}
           disabled={adding || !name.trim() || !phone.trim() || !password.trim()}
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
         >
           {adding ? "جاري الإضافة..." : "إضافة الفني"}
         </button>
@@ -216,7 +216,7 @@ export default function Technicians() {
 
         {loading ? (
           <div className="p-12 text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             <p className="mt-4 text-gray-600">جاري التحميل...</p>
           </div>
         ) : techs.length === 0 ? (
@@ -239,7 +239,7 @@ export default function Technicians() {
                 {techs.map((t, index) => (
                   <tr
                     key={t.id || t._id || index}
-                    className="border-b hover:bg-green-50 transition-all duration-200"
+                    className="border-b hover:bg-blue-50 transition-all duration-200"
                   >
                     <td className="p-4 font-medium">{t.name || 'غير محدد'}</td>
                     <td className="p-4">{t.phone || 'غير محدد'}</td>
@@ -247,7 +247,7 @@ export default function Technicians() {
                       <span
                         className={`px-3 py-1.5 rounded-lg text-white text-sm font-medium ${
                           t.status === "active" || t.status === "available"
-                            ? "bg-green-600"
+                            ? "bg-blue-600"
                             : "bg-gray-500"
                         }`}
                       >
