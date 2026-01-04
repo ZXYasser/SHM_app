@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { FiPhone, FiLock, FiLogIn, FiAlertCircle, FiLoader } from "react-icons/fi";
+import { FiUser, FiLock, FiLogIn, FiAlertCircle, FiLoader } from "react-icons/fi";
 
 export default function Login({ onLogin }) {
-  const [phone, setPhone] = useState("");
+  const [username, setUsername] = useState("");
   const [pass, setPass] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -13,16 +13,8 @@ export default function Login({ onLogin }) {
     setError("");
     
     // Validation
-    if (!phone.trim() || !pass.trim()) {
+    if (!username.trim() || !pass.trim()) {
       setError("يرجى إدخال جميع الحقول");
-      return;
-    }
-
-    // Phone validation (Saudi format)
-    const phoneRegex = /^(05|5)[0-9]{8}$/;
-    const cleanPhone = phone.replace(/\s/g, '');
-    if (!phoneRegex.test(cleanPhone)) {
-      setError("يرجى إدخال رقم جوال صحيح (مثال: 0501234567)");
       return;
     }
 
@@ -30,7 +22,7 @@ export default function Login({ onLogin }) {
 
     // Simulate API call
     setTimeout(() => {
-      if ((phone === "admin" || cleanPhone === "0500000000") && pass === "shm123") {
+      if (username === "admin" && pass === "shm123") {
         setLoading(false);
         onLogin();
       } else {
@@ -146,35 +138,31 @@ export default function Login({ onLogin }) {
 
         {/* Input Fields */}
         <div className="space-y-5">
-          {/* Phone Field */}
+          {/* Username Field */}
           <div>
             <label className="block text-gray-700 text-sm font-semibold mb-2">
-              رقم الجوال
+              اسم المستخدم
             </label>
             <div className="relative">
               <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 z-10">
-                <FiPhone size={20} />
+                <FiUser size={20} />
               </div>
               <input
-                type="tel"
+                type="text"
                 className="w-full border-2 border-gray-200/60 p-4 pr-12 rounded-2xl focus:ring-4 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all duration-300 bg-gradient-to-br from-white to-gray-50/50 backdrop-blur-sm focus:bg-white focus:shadow-2xl focus:shadow-blue-500/30 hover:border-blue-400/60 hover:shadow-lg placeholder-gray-400 font-medium"
-                placeholder="05xxxxxxxx"
-                value={phone}
+                placeholder="أدخل اسم المستخدم"
+                value={username}
                 onChange={(e) => {
-                  // Allow only numbers
-                  const value = e.target.value.replace(/\D/g, '');
-                  setPhone(value);
+                  setUsername(e.target.value);
                   setError("");
                 }}
                 onKeyPress={handleKeyPress}
                 disabled={loading}
-                maxLength={10}
               />
               {/* Premium Input Glow Effect */}
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/0 via-blue-500/15 to-blue-500/0 opacity-0 focus-within:opacity-100 transition-opacity duration-500 pointer-events-none blur-sm"></div>
               <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-blue-400 to-blue-500 opacity-0 focus-within:opacity-20 transition-opacity duration-500 pointer-events-none blur-md"></div>
             </div>
-            <p className="text-xs text-gray-400 mt-1 pr-1">مثال: 0501234567</p>
           </div>
 
           {/* Password Field */}

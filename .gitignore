@@ -48,6 +48,8 @@ Thumbs.db
 **/android/app/build/
 **/android/.idea/
 **/android/local.properties
+**/*.hprof
+**/java_pid*.hprof
 
 # iOS
 **/ios/Pods/
