@@ -9,6 +9,8 @@ class OrderModel {
   final String status;
   final DateTime? createdAt;
   final String? technicianId;
+  final int? estimatedArrivalMinutes;
+  final DateTime? estimatedArrivalTimestamp;
 
   OrderModel({
     required this.id,
@@ -21,6 +23,8 @@ class OrderModel {
     required this.status,
     this.createdAt,
     this.technicianId,
+    this.estimatedArrivalMinutes,
+    this.estimatedArrivalTimestamp,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -44,6 +48,27 @@ class OrderModel {
       }
     }
 
+    DateTime? parseEstimatedArrivalTimestamp(dynamic dateValue) {
+      if (dateValue == null) return null;
+      if (dateValue is Map) {
+        if (dateValue['seconds'] != null) {
+          return DateTime.fromMillisecondsSinceEpoch(
+            dateValue['seconds'] * 1000,
+          );
+        }
+        if (dateValue['toDate'] != null) {
+          return DateTime.parse(dateValue['toDate'].toString());
+        }
+      } else if (dateValue is String) {
+        return DateTime.tryParse(dateValue);
+      } else if (dateValue is int) {
+        return DateTime.fromMillisecondsSinceEpoch(dateValue);
+      } else if (dateValue is DateTime) {
+        return dateValue;
+      }
+      return null;
+    }
+
     return OrderModel(
       id: json['id'] ?? json['_id'] ?? '',
       serviceType: json['serviceType'] ?? '',
@@ -55,6 +80,10 @@ class OrderModel {
       status: json['status'] ?? 'new',
       createdAt: createdAtDate,
       technicianId: json['technicianId'],
+      estimatedArrivalMinutes: json['estimatedArrivalMinutes'] != null 
+          ? (json['estimatedArrivalMinutes'] as num).toInt() 
+          : null,
+      estimatedArrivalTimestamp: parseEstimatedArrivalTimestamp(json['estimatedArrivalTimestamp']),
     );
   }
 

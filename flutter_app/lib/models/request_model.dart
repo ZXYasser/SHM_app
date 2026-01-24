@@ -5,6 +5,7 @@ class ServiceRequest {
   final String notes;
   final double latitude;
   final double longitude;
+  final int? price; // السعر بالريال
 
   ServiceRequest({
     required this.serviceType,
@@ -13,6 +14,7 @@ class ServiceRequest {
     required this.notes,
     required this.latitude,
     required this.longitude,
+    this.price,
   });
 
   Map<String, dynamic> toJson() {
@@ -23,6 +25,7 @@ class ServiceRequest {
       "notes": notes,
       "latitude": latitude,
       "longitude": longitude,
+      "price": price,
     };
   }
 
@@ -34,6 +37,7 @@ class ServiceRequest {
       notes: json['notes'] ?? '',
       latitude: (json['latitude'] ?? 0.0).toDouble(),
       longitude: (json['longitude'] ?? 0.0).toDouble(),
+      price: json['price'] != null ? (json['price'] as num).toInt() : null,
     );
   }
 }
@@ -48,6 +52,9 @@ class OrderModel {
   final double longitude;
   final String status;
   final DateTime? createdAt;
+  final int? price; // السعر بالريال
+  final int? estimatedArrivalMinutes; // الوقت المتوقع للوصول بالدقائق
+  final DateTime? estimatedArrivalTimestamp; // وقت الوصول المتوقع
 
   OrderModel({
     this.id,
@@ -59,6 +66,9 @@ class OrderModel {
     required this.longitude,
     required this.status,
     this.createdAt,
+    this.price,
+    this.estimatedArrivalMinutes,
+    this.estimatedArrivalTimestamp,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -99,6 +109,58 @@ class OrderModel {
       return null;
     }
 
+    // معالجة estimatedArrivalTimestamp
+    DateTime? parseEstimatedArrivalTimestamp(dynamic dateValue) {
+      if (dateValue == null) return null;
+      
+      if (dateValue is String) {
+        try {
+          return DateTime.parse(dateValue);
+        } catch (e) {
+          return null;
+        }
+      }
+      
+      if (dateValue is DateTime) {
+        return dateValue;
+      }
+      
+      if (dateValue is Map) {
+        if (dateValue['seconds'] != null) {
+          final seconds = dateValue['seconds'] as int;
+          final nanoseconds = (dateValue['nanoseconds'] as int?) ?? 0;
+          return DateTime.fromMillisecondsSinceEpoch(
+            seconds * 1000 + (nanoseconds ~/ 1000000),
+          );
+        }
+        if (dateValue['_seconds'] != null) {
+          final seconds = dateValue['_seconds'] as int;
+          return DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
+        }
+      }
+      
+      return null;
+    }
+
+    // معالجة estimatedArrivalMinutes
+    int? parseEstimatedArrivalMinutes(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      if (value is String) {
+        final parsed = int.tryParse(value);
+        return parsed;
+      }
+      return null;
+    }
+
+    final estimatedMinutes = parseEstimatedArrivalMinutes(json['estimatedArrivalMinutes']);
+    
+    // Debug logging
+    if (json['id'] != null) {
+      print('🔍 Parsing Order ${json['id']}: estimatedArrivalMinutes=${json['estimatedArrivalMinutes']} (type: ${json['estimatedArrivalMinutes'].runtimeType}) -> parsed: $estimatedMinutes');
+    }
+
     return OrderModel(
       id: json['id']?.toString() ?? json['_id']?.toString(),
       serviceType: json['serviceType'] ?? '',
@@ -109,6 +171,9 @@ class OrderModel {
       longitude: (json['longitude'] ?? 0.0).toDouble(),
       status: json['status'] ?? 'new',
       createdAt: parseCreatedAt(json['createdAt']),
+      price: json['price'] != null ? (json['price'] as num).toInt() : null,
+      estimatedArrivalMinutes: estimatedMinutes,
+      estimatedArrivalTimestamp: parseEstimatedArrivalTimestamp(json['estimatedArrivalTimestamp']),
     );
   }
 

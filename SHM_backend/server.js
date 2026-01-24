@@ -81,7 +81,9 @@ app.post("/new-request", async (req, res) => {
     console.log("📥 Received new request:", JSON.stringify(req.body, null, 2));
 
     // التحقق من البيانات المطلوبة
-    const { serviceType, carModel, plateNumber, notes, latitude, longitude } = req.body;
+    const { serviceType, carModel, plateNumber, notes, latitude, longitude, price } = req.body;
+    
+    console.log("💰 Price received:", price, "Type:", typeof price);
     
     if (!serviceType || !carModel || !notes || latitude === undefined || longitude === undefined) {
       return res.status(400).json({
@@ -90,6 +92,18 @@ app.post("/new-request", async (req, res) => {
       });
     }
 
+    // معالجة السعر بشكل صحيح
+    let finalPrice = null;
+    if (price !== undefined && price !== null) {
+      finalPrice = Number(price);
+      if (isNaN(finalPrice)) {
+        console.warn("⚠️ Invalid price value, setting to null");
+        finalPrice = null;
+      }
+    }
+    
+    console.log("💰 Final price to save:", finalPrice);
+
     const newReq = {
       serviceType,
       carModel,
@@ -97,10 +111,13 @@ app.post("/new-request", async (req, res) => {
       notes,
       latitude: Number(latitude),
       longitude: Number(longitude),
+      price: finalPrice, // إضافة السعر (null للخدمات المتغيرة)
       status: "new",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
+    
+    console.log("💾 Request to save:", JSON.stringify(newReq, null, 2));
 
     console.log("💾 Saving to Firestore...");
     const docRef = await db.collection("requests").add(newReq);
@@ -138,20 +155,90 @@ app.get("/requests", async (req, res) => {
 
     const list = snap.docs.map(doc => {
       const data = doc.data();
+      
+      // Log raw data for debugging - only for requests with estimatedArrivalMinutes or in_progress status
+      if (data.estimatedArrivalMinutes != null || data.status === 'in_progress') {
+        console.log(`🔍 Raw data for request ${doc.id}:`, {
+          hasEstimatedArrivalMinutes: 'estimatedArrivalMinutes' in data,
+          estimatedArrivalMinutesValue: data.estimatedArrivalMinutes,
+          estimatedArrivalMinutesType: typeof data.estimatedArrivalMinutes,
+          status: data.status,
+          technicianId: data.technicianId
+        });
+      }
+      
       // تحويل Firestore Timestamp إلى ISO string
       const createdAt = data.createdAt?.toDate?.()?.toISOString() || 
                         data.createdAt?.seconds ? 
                         new Date(data.createdAt.seconds * 1000).toISOString() : 
                         null;
       
+      // معالجة estimatedArrivalTimestamp
+      let estimatedArrivalTimestamp = null;
+      if (data.estimatedArrivalTimestamp) {
+        if (data.estimatedArrivalTimestamp.toDate) {
+          estimatedArrivalTimestamp = data.estimatedArrivalTimestamp.toDate().toISOString();
+        } else if (data.estimatedArrivalTimestamp.seconds) {
+          estimatedArrivalTimestamp = new Date(data.estimatedArrivalTimestamp.seconds * 1000).toISOString();
+        }
+      }
+      
+      // التأكد من أن estimatedArrivalMinutes موجود كرقم
+      let estimatedArrivalMinutes = null;
+      if (data.estimatedArrivalMinutes != null && data.estimatedArrivalMinutes !== undefined) {
+        if (typeof data.estimatedArrivalMinutes === 'number') {
+          estimatedArrivalMinutes = data.estimatedArrivalMinutes;
+        } else if (typeof data.estimatedArrivalMinutes === 'string') {
+          const parsed = parseInt(data.estimatedArrivalMinutes, 10);
+          if (!isNaN(parsed)) {
+            estimatedArrivalMinutes = parsed;
+          }
+        } else {
+          const parsed = Number(data.estimatedArrivalMinutes);
+          if (!isNaN(parsed) && isFinite(parsed)) {
+            estimatedArrivalMinutes = Math.floor(parsed);
+          }
+        }
+      }
+      
+      // Debug: Log if we found estimatedArrivalMinutes
+      if (estimatedArrivalMinutes != null) {
+        console.log(`✅ Found estimatedArrivalMinutes for request ${doc.id}: ${estimatedArrivalMinutes} (original: ${data.estimatedArrivalMinutes}, type: ${typeof data.estimatedArrivalMinutes})`);
+      }
+      
       const result = {
         id: doc.id,
-        ...data,
+        serviceType: data.serviceType,
+        carModel: data.carModel,
+        plateNumber: data.plateNumber || '',
+        notes: data.notes,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        status: data.status,
+        price: data.price,
+        technicianId: data.technicianId,
         createdAt: createdAt || data.createdAt,
+        updatedAt: data.updatedAt,
+        estimatedArrivalMinutes: estimatedArrivalMinutes, // Explicitly set - must be after all other fields
+        estimatedArrivalTimestamp: estimatedArrivalTimestamp, // Use processed value only
       };
       
-      // Log technicianId for debugging
-      console.log(`📋 Request ${doc.id} - technicianId: ${result.technicianId || 'NULL/UNDEFINED'}, status: ${result.status}`);
+      // Remove undefined fields to avoid JSON issues (but keep null values)
+      Object.keys(result).forEach(key => {
+        if (result[key] === undefined) {
+          delete result[key];
+        }
+      });
+      
+      // Ensure estimatedArrivalMinutes is explicitly included even if null
+      if (!('estimatedArrivalMinutes' in result)) {
+        result.estimatedArrivalMinutes = null;
+      }
+      
+      // Log for debugging - only log if estimatedArrivalMinutes exists or status is in_progress
+      if (result.estimatedArrivalMinutes != null || result.status === 'in_progress') {
+        console.log(`📋 Request ${doc.id} - status: ${result.status}, estimatedArrivalMinutes: ${result.estimatedArrivalMinutes ?? 'NULL'}, technicianId: ${result.technicianId ?? 'NULL'}`);
+      }
       
       return result;
     });
@@ -171,7 +258,7 @@ app.get("/requests", async (req, res) => {
 app.patch("/requests/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, technicianId } = req.body;
+    const { status, technicianId, estimatedArrivalMinutes } = req.body;
 
     const updateData = {
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
@@ -190,27 +277,108 @@ app.patch("/requests/:id", async (req, res) => {
     if (technicianId !== undefined && technicianId !== null && technicianId !== '') {
       updateData.technicianId = technicianId;
       console.log(`👤 Setting technicianId to: ${technicianId} for request ${id}`);
-      // إذا تم تعيين فني، قم بتغيير الحالة إلى "in_progress" تلقائيًا إذا لم يتم تحديد حالة أخرى
-      if (technicianId && !status) {
-        updateData.status = "in_progress";
-      }
+      // لا نغير الحالة تلقائياً - الحالة ستتغير فقط عندما يضغط الفني على "بدء التنفيذ"
     } else if (technicianId === null || technicianId === '') {
       // إذا تم إرسال null أو string فارغ، قم بحذف technicianId من الطلب
       updateData.technicianId = admin.firestore.FieldValue.delete();
       console.log(`👤 Removing technicianId from request ${id}`);
     }
 
-    console.log(`📝 Updating request ${id}:`, JSON.stringify(updateData, null, 2));
+    // معالجة وقت الوصول المتوقع
+    if (estimatedArrivalMinutes !== undefined && estimatedArrivalMinutes !== null) {
+      const minutes = Number(estimatedArrivalMinutes);
+      console.log(`⏰ Received estimatedArrivalMinutes: ${estimatedArrivalMinutes} (type: ${typeof estimatedArrivalMinutes}), converted to: ${minutes}`);
+      
+      if (!isNaN(minutes) && minutes >= 0) {
+        // التأكد من أن القيمة رقم صحيح
+        updateData.estimatedArrivalMinutes = Math.floor(minutes);
+        
+        // حساب وقت الوصول المتوقع (الوقت الحالي + الدقائق)
+        const estimatedArrivalTime = new Date();
+        estimatedArrivalTime.setMinutes(estimatedArrivalTime.getMinutes() + minutes);
+        updateData.estimatedArrivalTimestamp = admin.firestore.Timestamp.fromDate(estimatedArrivalTime);
+        
+        // لا نغير الحالة تلقائياً - الحالة ستتغير فقط عندما يضغط الفني على "بدء التنفيذ"
+        
+        console.log(`⏰ Setting estimated arrival time: ${updateData.estimatedArrivalMinutes} minutes for request ${id}`);
+        console.log(`⏰ Update data (before Firestore):`, {
+          estimatedArrivalMinutes: updateData.estimatedArrivalMinutes,
+          estimatedArrivalMinutesType: typeof updateData.estimatedArrivalMinutes,
+          estimatedArrivalTimestamp: updateData.estimatedArrivalTimestamp?.toDate?.()?.toISOString() || 'Firestore Timestamp',
+          status: updateData.status,
+          updatedAt: 'serverTimestamp'
+        });
+      } else {
+        console.error(`❌ Invalid estimatedArrivalMinutes: ${estimatedArrivalMinutes} (converted to: ${minutes})`);
+        return res.status(400).json({
+          success: false,
+          error: "Invalid estimatedArrivalMinutes. Must be a non-negative number"
+        });
+      }
+    }
 
+    // Log update data (safe for Firestore objects)
+    const logUpdateData = {};
+    Object.keys(updateData).forEach(key => {
+      const value = updateData[key];
+      if (value && typeof value === 'object') {
+        if (value.constructor && value.constructor.name === 'FieldValue') {
+          logUpdateData[key] = 'serverTimestamp';
+        } else if (value.toDate) {
+          logUpdateData[key] = value.toDate().toISOString();
+        } else {
+          logUpdateData[key] = value;
+        }
+      } else {
+        logUpdateData[key] = value;
+      }
+    });
+    console.log(`📝 Updating request ${id} with:`, logUpdateData);
+
+    // Save to Firestore
     await db.collection("requests").doc(id).update(updateData);
+    
+    console.log(`💾 Update command sent to Firestore for request ${id}`);
 
-    // Verify the update by reading the document back
+    // Verify the update by reading the document back immediately
     const updatedDoc = await db.collection("requests").doc(id).get();
     const updatedData = updatedDoc.data();
-    console.log(`✅ Request ${id} updated successfully. Current data:`, {
-      technicianId: updatedData.technicianId,
-      status: updatedData.status
+    
+    // Extract estimatedArrivalMinutes for logging
+    const savedEstimatedArrivalMinutes = updatedData?.estimatedArrivalMinutes;
+    const savedEstimatedArrivalTimestamp = updatedData?.estimatedArrivalTimestamp;
+    
+    // Helper to convert Firestore Timestamp to string
+    const timestampToString = (ts) => {
+      if (!ts) return 'NULL';
+      if (ts.toDate) return ts.toDate().toISOString();
+      if (ts.seconds) return new Date(ts.seconds * 1000).toISOString();
+      return String(ts);
+    };
+    
+    console.log(`✅ Request ${id} updated successfully. Current data in Firestore:`, {
+      technicianId: updatedData?.technicianId ?? 'NULL',
+      status: updatedData?.status ?? 'NULL',
+      estimatedArrivalMinutes: savedEstimatedArrivalMinutes ?? 'NULL',
+      estimatedArrivalMinutesType: typeof savedEstimatedArrivalMinutes,
+      estimatedArrivalTimestamp: timestampToString(savedEstimatedArrivalTimestamp),
+      hasEstimatedArrivalMinutes: 'estimatedArrivalMinutes' in (updatedData || {})
     });
+    
+    // Verify by reading again after a short delay to ensure Firestore has fully updated
+    setTimeout(async () => {
+      try {
+        const verifyDoc = await db.collection("requests").doc(id).get();
+        const verifyData = verifyDoc.data();
+        console.log(`🔍 Verification read (500ms later) for request ${id}:`, {
+          estimatedArrivalMinutes: verifyData?.estimatedArrivalMinutes ?? 'NULL',
+          estimatedArrivalMinutesType: typeof verifyData?.estimatedArrivalMinutes,
+          status: verifyData?.status
+        });
+      } catch (err) {
+        console.error(`❌ Error in verification read: ${err.message}`);
+      }
+    }, 500);
     res.json({
       success: true,
       message: "تم تحديث حالة الطلب بنجاح"
@@ -417,6 +585,50 @@ app.get("/health", (req, res) => {
       technicians: "/technicians"
     }
   });
+});
+
+// Debug endpoint - Get single request by ID
+app.get("/requests/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`🔍 Debug: Fetching request ${id}...`);
+    
+    const doc = await db.collection("requests").doc(id).get();
+    
+    if (!doc.exists) {
+      return res.status(404).json({
+        success: false,
+        error: "Request not found"
+      });
+    }
+    
+    const data = doc.data();
+    console.log(`🔍 Debug: Raw Firestore data for ${id}:`, {
+      estimatedArrivalMinutes: data.estimatedArrivalMinutes,
+      estimatedArrivalMinutesType: typeof data.estimatedArrivalMinutes,
+      status: data.status,
+      technicianId: data.technicianId
+    });
+    
+    res.json({
+      success: true,
+      data: {
+        id: doc.id,
+        ...data,
+        estimatedArrivalMinutes: data.estimatedArrivalMinutes ?? null,
+        estimatedArrivalTimestamp: data.estimatedArrivalTimestamp?.toDate?.()?.toISOString() || 
+                                   (data.estimatedArrivalTimestamp?.seconds ? 
+                                    new Date(data.estimatedArrivalTimestamp.seconds * 1000).toISOString() : 
+                                    null)
+      }
+    });
+  } catch (err) {
+    console.error("❌ Error fetching request:", err);
+    res.status(500).json({
+      success: false,
+      error: err.message || "Failed to fetch request"
+    });
+  }
 });
 
 // Handle preflight requests (OPTIONS)

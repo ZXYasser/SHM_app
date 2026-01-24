@@ -22,6 +22,7 @@ class OrderDetailsScreen extends StatefulWidget {
 class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   bool _isUpdating = false;
   bool _isDeleting = false;
+  bool _isUpdatingArrivalTime = false;
 
   Future<void> _updateStatus(String newStatus) async {
     if (!mounted) return;
@@ -167,6 +168,118 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     }
   }
 
+  Future<void> _setEstimatedArrivalTime() async {
+    final color = const Color(AppConstants.primaryColorValue);
+    int? selectedMinutes;
+
+    final result = await showDialog<int>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('تحديد وقت الوصول المتوقع'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'اختر الوقت المتوقع للوصول إلى موقع العميل:',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 20),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [5, 10, 15, 20, 30, 45, 60].map((minutes) {
+                  final isSelected = selectedMinutes == minutes;
+                  return ChoiceChip(
+                    label: Text('$minutes دقيقة'),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      setDialogState(() {
+                        selectedMinutes = selected ? minutes : null;
+                      });
+                    },
+                    selectedColor: color.withOpacity(0.3),
+                    checkmarkColor: color,
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'أو أدخل عدد الدقائق يدوياً',
+                  hintText: 'مثال: 25',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  final minutes = int.tryParse(value);
+                  if (minutes != null && minutes > 0) {
+                    setDialogState(() {
+                      selectedMinutes = minutes;
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, null),
+              child: const Text('إلغاء'),
+            ),
+            ElevatedButton(
+              onPressed: selectedMinutes != null
+                  ? () => Navigator.pop(context, selectedMinutes)
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+              ),
+              child: const Text('تأكيد'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (result == null || result <= 0) return;
+
+    setState(() {
+      _isUpdatingArrivalTime = true;
+    });
+
+    final techData = await StorageService.getTechnicianData();
+    final technicianId = techData['id'];
+
+    final updateResult = await ApiService.updateEstimatedArrivalTime(
+      widget.order.id,
+      result,
+      technicianId: technicianId,
+    );
+
+    setState(() {
+      _isUpdatingArrivalTime = false;
+    });
+
+    if (!mounted) return;
+
+    if (updateResult['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('تم تحديد وقت الوصول: $result دقيقة'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      widget.onOrderUpdated();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(updateResult['error'] ?? 'فشل التحديث'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   Color _getStatusColor(String status) {
     switch (status) {
       case 'new':
@@ -287,7 +400,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             const SizedBox(height: 24),
 
             // Actions
-            if (order.status == 'new')
+            // زر "بدء التنفيذ" - يظهر عندما يكون الفني معين والحالة "new"
+            if (order.status == 'new' && order.technicianId != null && order.technicianId!.isNotEmpty)
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -315,6 +429,39 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   ),
                 ),
               ),
+
+            // Set/Update Estimated Arrival Time Button
+            // زر "تحديد وقت الوصول" - يظهر عندما يكون الفني معين والحالة "new" أو "in_progress"
+            if ((order.status == 'new' || order.status == 'in_progress') && order.technicianId != null && order.technicianId!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: _isUpdatingArrivalTime ? null : _setEstimatedArrivalTime,
+                  icon: _isUpdatingArrivalTime
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.access_time),
+                  label: Text(
+                    order.estimatedArrivalMinutes != null
+                        ? 'تحديث وقت الوصول (${order.estimatedArrivalMinutes} دقيقة)'
+                        : 'تحديد وقت الوصول المتوقع',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
 
             if (order.status == 'in_progress') ...[
               SizedBox(

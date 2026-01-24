@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { FiArrowRight, FiMapPin, FiTruck, FiFileText, FiCalendar, FiTag, FiX, FiTrash2, FiUser } from "react-icons/fi";
+import { FiArrowRight, FiMapPin, FiTruck, FiFileText, FiCalendar, FiTag, FiX, FiTrash2, FiUser, FiDollarSign } from "react-icons/fi";
 import { API_URL } from "./config";
+import { getOrderPriceText } from "./servicePrices";
 
 export default function OrderDetails({ order, onBack, onUpdateStatus }) {
   const [updatingStatus, setUpdatingStatus] = useState(false);
@@ -52,9 +53,10 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
         return;
       }
       
+      // لا نرسل status هنا حتى تبقى الحالة كما هي
+      // الحالة ستتغير فقط عندما يضغط الفني على "بدء التنفيذ"
       const requestBody = { 
-        technicianId: selectedTechnicianId.trim(),
-        status: order.status === 'new' ? 'in_progress' : order.status
+        technicianId: selectedTechnicianId.trim()
       };
       
       console.log("🔧 Assigning technician:", {
@@ -280,6 +282,24 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
                 <div>
                   <div className="text-sm text-gray-500">تاريخ الطلب</div>
                   <div className="text-base text-gray-700">{formatDate()}</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <FiDollarSign className={`mt-1 ${order.price !== null && order.price !== undefined ? 'text-green-500' : 'text-orange-500'}`} size={20} />
+                <div className="flex-1">
+                  <div className="text-sm text-gray-500 mb-1">السعر</div>
+                  <div className={`text-lg font-bold ${
+                    order.price !== null && order.price !== undefined
+                      ? 'text-green-600'
+                      : 'text-orange-600'
+                  }`}>
+                    {getOrderPriceText(order)}
+                  </div>
+                  {order.price === null || order.price === undefined ? (
+                    <div className="text-xs text-gray-400 mt-1">
+                      السعر سيتم تحديده حسب الكمية المستخدمة
+                    </div>
+                  ) : null}
                 </div>
               </div>
               <div className="flex items-start gap-3">

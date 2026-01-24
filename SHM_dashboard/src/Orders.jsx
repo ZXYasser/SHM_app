@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { FiEye, FiRefreshCw, FiFilter, FiTrash2, FiTrash } from "react-icons/fi";
 import { API_URL } from "./config";
+import { getOrderPriceText } from "./servicePrices";
 
 export default function Orders({ onOpenRequest, onRefreshReady }) {
   const [orders, setOrders] = useState([]);
@@ -14,11 +15,22 @@ export default function Orders({ onOpenRequest, onRefreshReady }) {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`${API_URL}/requests`);
+      const url = `${API_URL}/requests`;
+      console.log(`🔗 Fetching orders from: ${url}`);
+      console.log(`📡 API_URL: ${API_URL}`);
+      
+      const res = await fetch(url);
+      console.log(`📥 Response status: ${res.status} ${res.statusText}`);
+      
       if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
+        const errorText = await res.text();
+        console.error(`❌ HTTP error response:`, errorText);
+        throw new Error(`HTTP error! status: ${res.status} - ${errorText.substring(0, 100)}`);
       }
+      
       const data = await res.json();
+      console.log(`✅ Received data:`, data);
+      
       if (Array.isArray(data)) {
         // Log orders with technicianId for debugging
         data.forEach(order => {
@@ -33,8 +45,13 @@ export default function Orders({ onOpenRequest, onRefreshReady }) {
         throw new Error("Expected array but got: " + typeof data);
       }
     } catch (err) {
-      console.error("Error loading requests:", err);
-      setError("فشل في تحميل الطلبات. تأكد من أن الخادم يعمل.");
+      console.error("❌ Error loading requests:", err);
+      console.error("❌ Error details:", {
+        message: err.message,
+        stack: err.stack,
+        name: err.name
+      });
+      setError(`فشل في تحميل الطلبات: ${err.message}. تأكد من أن الخادم يعمل على ${API_URL}`);
       setOrders([]);
     } finally {
       setLoading(false);
@@ -351,6 +368,7 @@ export default function Orders({ onOpenRequest, onRefreshReady }) {
                   <th className="p-4 font-semibold">رقم اللوحة</th>
                   <th className="p-4 font-semibold">الفني</th>
                   <th className="p-4 font-semibold">الحالة</th>
+                  <th className="p-4 font-semibold">السعر</th>
                   <th className="p-4 font-semibold">التاريخ</th>
                   <th className="p-4 font-semibold text-center">إجراءات</th>
                 </tr>
@@ -392,6 +410,15 @@ export default function Orders({ onOpenRequest, onRefreshReady }) {
                           : order.status === "completed"
                           ? "مكتمل"
                           : "ملغي"}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <span className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${
+                        order.price !== null && order.price !== undefined
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-orange-100 text-orange-700'
+                      }`}>
+                        {getOrderPriceText(order)}
                       </span>
                     </td>
                     <td className="p-4 text-gray-600">{formatDate(order)}</td>

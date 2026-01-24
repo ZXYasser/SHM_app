@@ -10,6 +10,8 @@ class Order {
   final String? technicianId;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final int? estimatedArrivalMinutes;
+  final DateTime? estimatedArrivalTimestamp;
 
   Order({
     required this.id,
@@ -23,6 +25,8 @@ class Order {
     this.technicianId,
     this.createdAt,
     this.updatedAt,
+    this.estimatedArrivalMinutes,
+    this.estimatedArrivalTimestamp,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
@@ -55,6 +59,10 @@ class Order {
       technicianId: json['technicianId'],
       createdAt: parseDate(json['createdAt']),
       updatedAt: parseDate(json['updatedAt']),
+      estimatedArrivalMinutes: json['estimatedArrivalMinutes'] != null 
+          ? (json['estimatedArrivalMinutes'] as num).toInt() 
+          : null,
+      estimatedArrivalTimestamp: parseDate(json['estimatedArrivalTimestamp']),
     );
   }
 

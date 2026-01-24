@@ -182,6 +182,9 @@ class _RequestScreenState extends State<RequestScreen> {
       _isSubmitting = true;
     });
 
+    // الحصول على سعر الخدمة
+    final servicePrice = AppConstants.getServicePrice(widget.serviceType);
+
     final request = ServiceRequest(
       serviceType: widget.serviceType,
       carModel: _carModelController.text.trim(),
@@ -189,6 +192,7 @@ class _RequestScreenState extends State<RequestScreen> {
       notes: _notesController.text.trim(),
       latitude: _latitude!,
       longitude: _longitude!,
+      price: servicePrice, // إضافة السعر
     );
 
     final result = await ApiService.submitRequest(request);

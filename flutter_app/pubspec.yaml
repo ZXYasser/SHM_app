@@ -36,6 +36,7 @@ dependencies:
   http: ^1.2.2
   geolocator: ^13.0.1
   google_maps_flutter: ^2.10.0
+  url_launcher: ^6.3.0
 
 
 
@@ -66,6 +67,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/icon/
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -78,12 +80,11 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
+  fonts:
+    - family: DIN Next Arabic
+      fonts:
+        - asset: fonts/DINNextArabic-Regular.ttf
+          weight: 400
   #   - family: Trajan Pro
   #     fonts:
   #       - asset: fonts/TrajanPro.ttf
@@ -99,16 +100,27 @@ flutter_launcher_icons:
   android: true
   ios: true
 
+  # مسار الأيقونة الأساسية (يجب أن تكون 1024x1024 بكسل)
   image_path: "assets/icon/app_icon.png"
 
-  adaptive_icon_background: "#00A65A"
+  # إعدادات Android Adaptive Icon
+  # استخدام خلفية شفافة أو داكنة لتتناسب مع الصورة
+  adaptive_icon_background: "#000000"  # خلفية سوداء لتتناسب مع الصورة
   adaptive_icon_foreground: "assets/icon/app_icon.png"
+  
+  # إعدادات إضافية لتحسين العرض
+  android_adaptive_icon_foreground: "assets/icon/app_icon.png"
+  android_adaptive_icon_background: "#000000"
 
-  remove_alpha_ios: true
+  # إعدادات iOS
+  remove_alpha_ios: true  # إزالة الشفافية لـ iOS (مطلوب من App Store)
+
+  # إعدادات Android
   min_sdk_android: 21
 
+  # إعدادات Web
   web:
     generate: true
     image_path: "assets/icon/app_icon.png"
-    background_color: "#00A65A"
-    theme_color: "#00A65A"
+    background_color: "#000000"  # خلفية سوداء لتتناسب مع الصورة
+    theme_color: "#42A5F5"

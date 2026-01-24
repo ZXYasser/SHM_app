@@ -30,12 +30,65 @@ class AppConstants {
   // ================================
   // 🛠 Services
   // ================================
-  static const String serviceTire = 'بنشر متنقل';
-  static const String serviceBattery = 'بطارية متنقلة';
+  static const String serviceTire = 'بنزيـن ';
+  static const String serviceBattery = 'بطاريـة ';
   static const String serviceElectrical = 'خلل كهربائي';
   static const String serviceOther = 'خلل آخر';
   static const String serviceAC = 'إصلاح تكييف';
   static const String serviceOil = 'تغيير زيت';
   static const String serviceMechanic = 'ميكانيكا';
-  static const String serviceKey = 'مفتاح';
+  static const String serviceKey = 'مفتـاح';
+
+  // خدمات إضافية
+  static const String serviceTireChange = 'تغيير إطارات';
+  static const String serviceFullInspection = 'فحص شامل';
+  static const String serviceTow = 'خدمة السحب';
+
+  // خدمات متميزة
+  static const String serviceSubscription = 'اشتراك شهري/سنوي';
+  static const String serviceLoyalty = 'برنامج نقاط الولاء';
+  static const String serviceDiscount = 'خصومات للعملاء المتكرن';
+  static const String serviceVIP = 'خدمة VIP';
+
+  // ================================
+  // 💰 Service Prices
+  // ================================
+  /// Map للتسعيرات - price: السعر بالريال، isVariable: true إذا كان السعر متغير
+  static Map<String, Map<String, dynamic>> get servicePrices => {
+    serviceTire: {'price': 50, 'isVariable': false},
+    serviceBattery: {'price': 80, 'isVariable': false},
+    serviceElectrical: {'price': 100, 'isVariable': false},
+    serviceAC: {'price': 120, 'isVariable': false},
+    serviceOil: {'price': null, 'isVariable': true}, // متغير حسب الكمية
+    serviceMechanic: {'price': 150, 'isVariable': false},
+    serviceKey: {'price': 80, 'isVariable': false},
+    serviceOther: {'price': 100, 'isVariable': false},
+    serviceTireChange: {'price': null, 'isVariable': true}, // متغير حسب الكمية
+    serviceFullInspection: {'price': 120, 'isVariable': false},
+    serviceTow: {'price': 150, 'isVariable': false},
+  };
+
+  /// الحصول على سعر الخدمة
+  static int? getServicePrice(String serviceType) {
+    final priceInfo = servicePrices[serviceType];
+    return priceInfo?['price'] as int?;
+  }
+
+  /// التحقق من كون السعر متغير
+  static bool isServicePriceVariable(String serviceType) {
+    final priceInfo = servicePrices[serviceType];
+    return priceInfo?['isVariable'] == true;
+  }
+
+  /// الحصول على نص السعر للعرض
+  static String getServicePriceText(String serviceType) {
+    if (isServicePriceVariable(serviceType)) {
+      return 'حسب الكمية';
+    }
+    final price = getServicePrice(serviceType);
+    if (price == null) {
+      return 'غير محدد';
+    }
+    return '$price ريال';
+  }
 }

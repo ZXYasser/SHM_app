@@ -24,10 +24,10 @@ class TechnicianApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
         useMaterial3: true,
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           centerTitle: true,
           elevation: 0,
-          backgroundColor: const Color(AppConstants.primaryColorValue),
+          backgroundColor: Color(AppConstants.primaryColorValue),
           foregroundColor: Colors.white,
         ),
       ),
@@ -64,9 +64,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        backgroundColor: const Color(AppConstants.primaryColorValue),
-        body: const Center(
+      return const Scaffold(
+        backgroundColor: Color(AppConstants.primaryColorValue),
+        body: Center(
           child: CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
           ),

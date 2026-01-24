@@ -116,11 +116,21 @@ class ApiService {
       final response = await http.get(url).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final data = jsonDecode(response.body);
+        // Log for debugging
+        if (data is List && data.isNotEmpty) {
+          print('📥 Fetched ${data.length} requests');
+          for (var request in data.take(5)) {
+            print('   Request ${request['id']}: status=${request['status']}, estimatedArrivalMinutes=${request['estimatedArrivalMinutes']}, estimatedArrivalTimestamp=${request['estimatedArrivalTimestamp']}');
+          }
+        }
+        return data;
       } else {
+        print('❌ Failed to fetch requests: ${response.statusCode}');
         return [];
       }
     } catch (e) {
+      print('❌ Error fetching requests: $e');
       return [];
     }
   }

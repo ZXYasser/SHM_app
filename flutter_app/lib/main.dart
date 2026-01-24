@@ -16,7 +16,7 @@ class SahmApp extends StatelessWidget {
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        fontFamily: 'Arial',
+        fontFamily: 'DIN Next Arabic', // خط DIN Next Arabic لجميع النصوص
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(AppConstants.primaryColorValue),
           brightness: Brightness.light,
@@ -90,6 +90,10 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  late Animation<double> _logoRotationAnimation;
+  late Animation<double> _logoPulseAnimation;
+  late Animation<double> _glowAnimation;
+  late Animation<double> _shimmerAnimation;
 
   @override
   void initState() {
@@ -97,26 +101,89 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 2500),
     );
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
+        curve: const Interval(0.0, 0.4, curve: Curves.easeIn),
       ),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.0, 0.6, curve: Curves.elasticOut),
       ),
     );
 
+    // أنيميشن دوران سلس للشعار
+    _logoRotationAnimation = Tween<double>(begin: -0.2, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.7, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    // أنيميشن نبض متقدم للشعار
+    _logoPulseAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.2)
+            .chain(CurveTween(curve: Curves.easeOut)),
+        weight: 0.25,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.2, end: 0.95)
+            .chain(CurveTween(curve: Curves.easeIn)),
+        weight: 0.15,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.95, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 0.2,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.0),
+        weight: 0.4,
+      ),
+    ]).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.8, curve: Curves.easeInOut),
+      ),
+    );
+
+    // أنيميشن توهج متحرك
+    _glowAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.3, end: 0.8)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 0.5,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.8, end: 0.4)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 0.5,
+      ),
+    ]).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.2, 1.0, curve: Curves.easeInOut),
+      ),
+    );
+
+    // أنيميشن بريق (shimmer)
+    _shimmerAnimation = Tween<double>(begin: -1.0, end: 2.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.3, 0.9, curve: Curves.easeInOut),
+      ),
+    );
+
     _controller.forward();
 
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(milliseconds: 2500), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
@@ -158,31 +225,122 @@ class _SplashScreenState extends State<SplashScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Image.asset(
-                      'assets/images/logo_white.png',
-                      width: 80,
-                      height: 80,
-                      errorBuilder: (context, error, stackTrace) {
-                        // Fallback to icon if image not found
-                        return const Icon(
-                          Icons.build_circle,
-                          size: 80,
-                          color: Colors.white,
-                        );
-                      },
-                    ),
-                  ),
-                ),
+              // الشعار مع أنيميشن احترافي متقدم
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // تأثير التوهج الخارجي المتحرك
+                      Transform.scale(
+                        scale: _scaleAnimation.value * 1.3,
+                        child: Container(
+                          width: 150,
+                          height: 150,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.white
+                                    .withOpacity(_glowAnimation.value * 0.6),
+                                blurRadius: 40,
+                                spreadRadius: 15,
+                              ),
+                              BoxShadow(
+                                color: const Color(AppConstants.primaryColorValue)
+                                    .withOpacity(_glowAnimation.value * 0.4),
+                                blurRadius: 60,
+                                spreadRadius: 10,
+                              ),
+                              BoxShadow(
+                                color: Colors.cyan
+                                    .withOpacity(_glowAnimation.value * 0.3),
+                                blurRadius: 80,
+                                spreadRadius: 5,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // الشعار الرئيسي
+                      Transform.scale(
+                        scale: _scaleAnimation.value * _logoPulseAnimation.value,
+                        child: Transform.rotate(
+                          angle: _logoRotationAnimation.value,
+                          child: FadeTransition(
+                            opacity: _fadeAnimation,
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: RadialGradient(
+                                  colors: [
+                                    Colors.white.withOpacity(0.1),
+                                    Colors.transparent,
+                                  ],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.white
+                                        .withOpacity(_glowAnimation.value * 0.4),
+                                    blurRadius: 25,
+                                    spreadRadius: 8,
+                                  ),
+                                ],
+                              ),
+                              child: Stack(
+                                children: [
+                                  // الشعار
+                                  Image.asset(
+                                    'assets/icon/logo.png',
+                                    width: 120,
+                                    height: 120,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(
+                                        Icons.build_circle,
+                                        size: 100,
+                                        color: Colors.white,
+                                      );
+                                    },
+                                  ),
+                                  // تأثير البريق (Shimmer)
+                                  if (_shimmerAnimation.value > -0.5 &&
+                                      _shimmerAnimation.value < 1.5)
+                                    Positioned.fill(
+                                      child: ClipOval(
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              begin: Alignment(
+                                                _shimmerAnimation.value - 1,
+                                                0,
+                                              ),
+                                              end: Alignment(
+                                                _shimmerAnimation.value,
+                                                0,
+                                              ),
+                                              colors: [
+                                                Colors.transparent,
+                                                Colors.white.withOpacity(0.3),
+                                                Colors.transparent,
+                                              ],
+                                              stops: const [0.0, 0.5, 1.0],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 32),
               FadeTransition(

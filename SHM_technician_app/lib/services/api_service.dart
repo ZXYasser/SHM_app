@@ -149,6 +149,70 @@ class ApiService {
     }
   }
 
+  // تحديث وقت الوصول المتوقع
+  static Future<Map<String, dynamic>> updateEstimatedArrivalTime(
+    String requestId,
+    int estimatedArrivalMinutes, {
+    String? technicianId,
+  }) async {
+    final url = Uri.parse(
+      '${AppConstants.baseUrl}${AppConstants.updateRequestEndpoint}/$requestId',
+    );
+
+    try {
+      print('📤 Updating estimated arrival time for request $requestId: $estimatedArrivalMinutes minutes');
+
+      final body = <String, dynamic>{
+        'estimatedArrivalMinutes': estimatedArrivalMinutes,
+      };
+      if (technicianId != null) {
+        body['technicianId'] = technicianId;
+      }
+
+      final response = await http
+          .patch(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      print('📥 Response status: ${response.statusCode}');
+      print('📥 Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        if (data['success'] == true) {
+          return {
+            'success': true,
+            'message': data['message'] ?? 'تم تحديث وقت الوصول بنجاح',
+          };
+        } else {
+          return {
+            'success': false,
+            'error': data['error'] ?? 'فشل التحديث',
+          };
+        }
+      } else {
+        return {
+          'success': false,
+          'error': 'حدث خطأ في الخادم (${response.statusCode})',
+        };
+      }
+    } on TimeoutException {
+      return {
+        'success': false,
+        'error': 'انتهت مهلة الاتصال.',
+      };
+    } catch (e) {
+      print('❌ Error updating estimated arrival time: $e');
+      return {
+        'success': false,
+        'error': 'فشل الاتصال بالخادم.',
+      };
+    }
+  }
+
   // حذف طلب
   static Future<Map<String, dynamic>> deleteRequest(String requestId) async {
     final url = Uri.parse(

@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
+import 'account_info_screen.dart';
+import 'saved_cars_screen.dart';
+import 'saved_addresses_screen.dart';
+import 'payment_methods_screen.dart';
+import 'settings_screen.dart';
+import 'help_center_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -12,6 +18,16 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: color,
         foregroundColor: Colors.white,
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Image.asset(
+            'assets/icon/logo.png',
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return const SizedBox();
+            },
+          ),
+        ),
         title: const Text(
           'الملف الشخصي',
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -121,10 +137,29 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   _buildProfileTile(
                     icon: Icons.person_outline,
-                    title: 'المعلومات الشخصية',
+                    title: 'معلومات الحساب',
                     subtitle: 'عرض وتعديل معلوماتك',
                     onTap: () {
-                      _showComingSoon(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AccountInfoScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  _buildProfileTile(
+                    icon: Icons.directions_car_outlined,
+                    title: 'السيارات المحفوظة',
+                    subtitle: 'إدارة سياراتك',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SavedCarsScreen(),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: 12),
@@ -133,43 +168,54 @@ class ProfileScreen extends StatelessWidget {
                     title: 'العناوين المحفوظة',
                     subtitle: 'إدارة عناوينك',
                     onTap: () {
-                      _showComingSoon(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SavedAddressesScreen(),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: 12),
                   _buildProfileTile(
-                    icon: Icons.notifications_outlined,
-                    title: 'الإشعارات',
-                    subtitle: 'إعدادات الإشعارات',
+                    icon: Icons.credit_card_outlined,
+                    title: 'طرق الدفع',
+                    subtitle: 'إدارة طرق الدفع المحفوظة',
                     onTap: () {
-                      _showComingSoon(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PaymentMethodsScreen(),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: 12),
                   _buildProfileTile(
-                    icon: Icons.language_outlined,
-                    title: 'اللغة',
-                    subtitle: 'العربية',
+                    icon: Icons.settings_outlined,
+                    title: 'الإعدادات',
+                    subtitle: 'اللغة والإشعارات',
                     onTap: () {
-                      _showComingSoon(context);
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  _buildProfileTile(
-                    icon: Icons.info_outline,
-                    title: 'عن التطبيق',
-                    subtitle: 'إصدار 1.0.0',
-                    onTap: () {
-                      _showAboutDialog(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsScreen(),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: 12),
                   _buildProfileTile(
                     icon: Icons.help_outline,
-                    title: 'المساعدة والدعم',
+                    title: 'مركز المساعدة',
                     subtitle: 'أسئلة شائعة واتصل بنا',
                     onTap: () {
-                      _showComingSoon(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HelpCenterScreen(),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: 24),
