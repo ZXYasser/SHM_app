@@ -23,6 +23,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   bool _isUpdating = false;
   bool _isDeleting = false;
   bool _isUpdatingArrivalTime = false;
+  bool _isCancelling = false;
 
   Future<void> _updateStatus(String newStatus) async {
     if (!mounted) return;
@@ -101,6 +102,94 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         return 'ملغي';
       default:
         return status;
+    }
+  }
+
+  Future<void> _cancelOrder() async {
+    if (!mounted) return;
+
+    // طلب سبب الإلغاء
+    final reasonController = TextEditingController();
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('إلغاء الطلب'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('يرجى إدخال سبب الإلغاء:'),
+            const SizedBox(height: 12),
+            TextField(
+              controller: reasonController,
+              decoration: const InputDecoration(
+                hintText: 'مثال: عدم توفر قطع الغيار المطلوبة',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('إلغاء'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (reasonController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('يرجى إدخال سبب الإلغاء'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+              Navigator.pop(context, true);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('تأكيد الإلغاء'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() {
+      _isCancelling = true;
+    });
+
+    final result = await ApiService.updateRequestStatus(
+      widget.order.id,
+      'cancelled',
+    );
+
+    setState(() {
+      _isCancelling = false;
+    });
+
+    if (!mounted) return;
+
+    if (result['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'تم إلغاء الطلب بنجاح'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      widget.onOrderUpdated();
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['error'] ?? 'فشل إلغاء الطلب'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -492,6 +581,36 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 ),
               ),
               const SizedBox(height: 12),
+            ],
+
+            // Cancel Order Button - للفني (مع سبب)
+            if ((order.status == 'new' || order.status == 'in_progress') && order.technicianId != null && order.technicianId!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: _isCancelling ? null : _cancelOrder,
+                  icon: _isCancelling
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.cancel_outlined),
+                  label: const Text(
+                    'إلغاء الطلب',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
             ],
 
             // Open Maps Button

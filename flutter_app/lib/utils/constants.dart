@@ -15,6 +15,7 @@ class AppConstants {
   // Endpoints
   static const String newRequestEndpoint = '/new-request';
   static const String requestsEndpoint = '/requests';
+  static const String updateRequestEndpoint = '/requests';
 
   // ================================
   // 🎨 App Colors

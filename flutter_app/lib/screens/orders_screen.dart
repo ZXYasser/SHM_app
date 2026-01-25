@@ -62,6 +62,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
               'تم إكمال طلبك',
               'شكراً لاستخدامك خدمات سهم',
             );
+          } else if (order.status == 'cancelled') {
+            _showStatusNotification(
+              'تم إلغاء الطلب',
+              'تم إلغاء طلبك بنجاح',
+            );
           }
         }
         _lastOrderStatuses[orderId] = order.status;
@@ -954,9 +959,318 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     '${order.createdAt!.day}/${order.createdAt!.month}/${order.createdAt!.year} ${order.createdAt!.hour}:${order.createdAt!.minute.toString().padLeft(2, '0')}',
                   ),
                 ],
+                
+                // Cancel Order Button - فقط للطلبات قبل بدء التنفيذ
+                if (order.status == 'new') ...[
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _cancelOrder(order),
+                      icon: const Icon(Icons.cancel_outlined),
+                      label: const Text(
+                        'إلغاء الطلب',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+
+                // Rating Section - للطلبات المكتملة
+                if (order.status == 'completed') ...[
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.amber[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.amber[300]!),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.star, color: Colors.amber[700], size: 24),
+                            const SizedBox(width: 8),
+                            Text(
+                              order.rating != null
+                                  ? 'تم التقييم: ${order.rating}/5'
+                                  : 'قيم خدمتك',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.amber[900],
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (order.rating == null) ...[
+                          const SizedBox(height: 12),
+                          const Text(
+                            'كيف كانت تجربتك مع الخدمة؟',
+                            style: TextStyle(fontSize: 14, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () => _showRatingDialog(order),
+                              icon: const Icon(Icons.star_rate),
+                              label: const Text('قيم الخدمة'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.amber[600],
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (order.review != null && order.review!.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'تعليقك:',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  order.review!,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _cancelOrder(OrderModel order) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('تأكيد الإلغاء'),
+        content: const Text('هل أنت متأكد من إلغاء هذا الطلب؟'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('إلغاء'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('تأكيد الإلغاء'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final result = await ApiService.updateRequestStatus(
+        order.id!,
+        'cancelled',
+      );
+
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('تم إلغاء الطلب بنجاح'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        _loadOrders(showLoading: false);
+        Navigator.pop(context); // إغلاق dialog التفاصيل
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['error'] ?? 'فشل إلغاء الطلب'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('حدث خطأ: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Future<void> _showRatingDialog(OrderModel order) async {
+    int selectedRating = 0;
+    final reviewController = TextEditingController();
+    bool isSubmitting = false;
+
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('تقييم الخدمة'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'كيف تقيم خدمتك؟',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(5, (index) {
+                    final starIndex = index + 1;
+                    return GestureDetector(
+                      onTap: () {
+                        setDialogState(() {
+                          selectedRating = starIndex;
+                        });
+                      },
+                      child: Icon(
+                        starIndex <= selectedRating
+                            ? Icons.star
+                            : Icons.star_border,
+                        color: Colors.amber,
+                        size: 40,
+                      ),
+                    );
+                  }),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'تعليق (اختياري):',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: reviewController,
+                  decoration: const InputDecoration(
+                    hintText: 'شاركنا رأيك في الخدمة...',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 4,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isSubmitting
+                  ? null
+                  : () => Navigator.pop(context),
+              child: const Text('إلغاء'),
+            ),
+            ElevatedButton(
+              onPressed: isSubmitting || selectedRating == 0
+                  ? null
+                  : () async {
+                    setDialogState(() {
+                      isSubmitting = true;
+                    });
+
+                    try {
+                      final result = await ApiService.submitRating(
+                        order.id!,
+                        selectedRating,
+                        reviewController.text.trim().isEmpty
+                            ? null
+                            : reviewController.text.trim(),
+                      );
+
+                      if (!mounted) return;
+
+                      if (result['success'] == true) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('شكراً لتقييمك!'),
+                            backgroundColor: Colors.green,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                        _loadOrders(showLoading: false);
+                        Navigator.pop(context); // إغلاق dialog التفاصيل
+                      } else {
+                        setDialogState(() {
+                          isSubmitting = false;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(result['error'] ?? 'فشل إرسال التقييم'),
+                            backgroundColor: Colors.red,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (!mounted) return;
+                      setDialogState(() {
+                        isSubmitting = false;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('حدث خطأ: $e'),
+                          backgroundColor: Colors.red,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber[600],
+              ),
+              child: isSubmitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('إرسال التقييم'),
+            ),
+          ],
         ),
       ),
     );

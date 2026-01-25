@@ -80,5 +80,20 @@ class Order {
         return status;
     }
   }
+  
+  Color get statusColor {
+    switch (status) {
+      case 'new':
+        return Colors.blue;
+      case 'in_progress':
+        return Colors.orange;
+      case 'completed':
+        return Colors.green;
+      case 'cancelled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
 }
 

@@ -134,7 +134,13 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
 
   // Update status
   const updateStatus = async (newStatus) => {
-    if (!window.confirm(`هل تريد تغيير حالة الطلب إلى "${newStatus === 'in_progress' ? 'قيد التنفيذ' : newStatus === 'completed' ? 'مكتمل' : 'ملغي'}"؟`)) {
+    const statusText = {
+      'in_progress': 'قيد التنفيذ',
+      'completed': 'مكتمل',
+      'cancelled': 'ملغي'
+    }[newStatus] || newStatus;
+    
+    if (!window.confirm(`هل تريد تغيير حالة الطلب إلى "${statusText}"؟`)) {
       return;
     }
 
@@ -416,13 +422,22 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
               <h3 className="text-xl font-bold text-gray-800 mb-4">تغيير الحالة</h3>
               <div className="flex flex-wrap gap-3">
                 {order.status === 'new' && (
-                  <button
-                    onClick={() => updateStatus('in_progress')}
-                    disabled={updatingStatus}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-                  >
-                    {updatingStatus ? 'جاري التحديث...' : 'بدء التنفيذ'}
-                  </button>
+                  <>
+                    <button
+                      onClick={() => updateStatus('in_progress')}
+                      disabled={updatingStatus}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                    >
+                      {updatingStatus ? 'جاري التحديث...' : 'بدء التنفيذ'}
+                    </button>
+                    <button
+                      onClick={() => updateStatus('cancelled')}
+                      disabled={updatingStatus}
+                      className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+                    >
+                      {updatingStatus ? 'جاري الإلغاء...' : 'إلغاء الطلب'}
+                    </button>
+                  </>
                 )}
                 {order.status === 'in_progress' && (
                   <>
@@ -438,7 +453,7 @@ export default function OrderDetails({ order, onBack, onUpdateStatus }) {
                       disabled={updatingStatus}
                       className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition disabled:opacity-50"
                     >
-                      {updatingStatus ? 'جاري التحديث...' : 'إلغاء الطلب'}
+                      {updatingStatus ? 'جاري الإلغاء...' : 'إلغاء الطلب'}
                     </button>
                   </>
                 )}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FiUserPlus, FiTrash2, FiUsers, FiPhone, FiLock, FiRefreshCw } from "react-icons/fi";
+import { FiUserPlus, FiTrash2, FiUsers, FiPhone, FiLock, FiRefreshCw, FiStar } from "react-icons/fi";
 import { API_URL } from "./config";
 
 export default function Technicians() {
@@ -10,6 +10,7 @@ export default function Technicians() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [ratings, setRatings] = useState({});
 
   // =============== Load Technicians ===============
   const loadTechnicians = async () => {
@@ -35,8 +36,22 @@ export default function Technicians() {
     }
   };
 
+  // =============== Load Ratings ===============
+  const loadRatings = async () => {
+    try {
+      const res = await fetch(`${API_URL}/technicians/ratings`);
+      if (res.ok) {
+        const data = await res.json();
+        setRatings(data);
+      }
+    } catch (err) {
+      console.error("Error loading ratings:", err);
+    }
+  };
+
   useEffect(() => {
     loadTechnicians();
+    loadRatings();
   }, []);
 
   // =============== Add Technician ===============
@@ -138,14 +153,19 @@ export default function Technicians() {
           <FiUsers className="text-blue-600" size={32} />
           إدارة الفنيين
         </h2>
-        <button
-          onClick={loadTechnicians}
-          disabled={loading}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-        >
-          <FiRefreshCw className={loading ? "animate-spin" : ""} size={18} />
-          تحديث
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              loadTechnicians();
+              loadRatings();
+            }}
+            disabled={loading}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+          >
+            <FiRefreshCw className={loading ? "animate-spin" : ""} size={18} />
+            تحديث
+          </button>
+        </div>
       </div>
 
       {/* Error Message */}
@@ -231,41 +251,64 @@ export default function Technicians() {
                   <th className="p-4 font-semibold">الاسم</th>
                   <th className="p-4 font-semibold">رقم الجوال</th>
                   <th className="p-4 font-semibold">الحالة</th>
+                  <th className="p-4 font-semibold">متوسط التقييم</th>
                   <th className="p-4 font-semibold">تاريخ الإضافة</th>
                   <th className="p-4 font-semibold text-center">إجراءات</th>
                 </tr>
               </thead>
               <tbody>
-                {techs.map((t, index) => (
-                  <tr
-                    key={t.id || t._id || index}
-                    className="border-b hover:bg-blue-50 transition-all duration-200"
-                  >
-                    <td className="p-4 font-medium">{t.name || 'غير محدد'}</td>
-                    <td className="p-4">{t.phone || 'غير محدد'}</td>
-                    <td className="p-4">
-                      <span
-                        className={`px-3 py-1.5 rounded-lg text-white text-sm font-medium ${
-                          t.status === "active" || t.status === "available"
-                            ? "bg-blue-600"
-                            : "bg-gray-500"
-                        }`}
-                      >
-                        {t.status === "active" || t.status === "available" ? "نشط" : "غير نشط"}
-                      </span>
-                    </td>
-                    <td className="p-4 text-gray-600">{formatDate(t)}</td>
-                    <td className="p-4 text-center">
-                      <button
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition shadow-sm hover:shadow-md flex items-center gap-2 mx-auto"
-                        onClick={() => deleteTechnician(t.id || t._id)}
-                      >
-                        <FiTrash2 size={16} />
-                        حذف
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {techs.map((t, index) => {
+                  const techId = t.id || t._id;
+                  const techRating = ratings[techId];
+                  const averageRating = techRating ? parseFloat(techRating.averageRating) : null;
+                  const totalRatings = techRating ? techRating.totalRatings : 0;
+                  
+                  return (
+                    <tr
+                      key={techId || index}
+                      className="border-b hover:bg-blue-50 transition-all duration-200"
+                    >
+                      <td className="p-4 font-medium">{t.name || 'غير محدد'}</td>
+                      <td className="p-4">{t.phone || 'غير محدد'}</td>
+                      <td className="p-4">
+                        <span
+                          className={`px-3 py-1.5 rounded-lg text-white text-sm font-medium ${
+                            t.status === "active" || t.status === "available"
+                              ? "bg-blue-600"
+                              : "bg-gray-500"
+                          }`}
+                        >
+                          {t.status === "active" || t.status === "available" ? "نشط" : "غير نشط"}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        {averageRating !== null && averageRating > 0 ? (
+                          <div className="flex items-center gap-2">
+                            <FiStar className="text-amber-500" size={18} />
+                            <span className="font-semibold text-gray-800">
+                              {averageRating.toFixed(1)}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                              ({totalRatings} {totalRatings === 1 ? 'تقييم' : 'تقييمات'})
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-sm">لا يوجد تقييمات</span>
+                        )}
+                      </td>
+                      <td className="p-4 text-gray-600">{formatDate(t)}</td>
+                      <td className="p-4 text-center">
+                        <button
+                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition shadow-sm hover:shadow-md flex items-center gap-2 mx-auto"
+                          onClick={() => deleteTechnician(techId)}
+                        >
+                          <FiTrash2 size={16} />
+                          حذف
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

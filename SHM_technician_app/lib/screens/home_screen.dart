@@ -34,13 +34,13 @@ class _HomeScreenState extends State<HomeScreen> {
       final techData = await StorageService.getTechnicianData();
       final currentTechnicianId = techData['id'];
 
-      // فلترة الطلبات: عرض الطلبات المخصصة لهذا الفني + الطلبات غير المعينة (new)
+      // فلترة الطلبات: عرض الطلبات المخصصة لهذا الفني فقط
+      // الطلبات غير المعينة تبقى في Dashboard حتى يتم تعيينها
       final allOrders = data.map((json) => OrderModel.fromJson(json)).toList();
       final filteredOrders = allOrders.where((order) {
-        // عرض الطلبات المخصصة لهذا الفني
+        // عرض الطلبات المخصصة لهذا الفني فقط
         if (order.technicianId == currentTechnicianId) return true;
-        // عرض الطلبات غير المعينة (جديدة)
-        if (order.technicianId == null && order.status == 'new') return true;
+        // لا نعرض الطلبات غير المعينة - تبقى في Dashboard فقط
         return false;
       }).toList();
 

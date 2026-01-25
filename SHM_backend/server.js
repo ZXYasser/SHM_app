@@ -221,6 +221,8 @@ app.get("/requests", async (req, res) => {
         updatedAt: data.updatedAt,
         estimatedArrivalMinutes: estimatedArrivalMinutes, // Explicitly set - must be after all other fields
         estimatedArrivalTimestamp: estimatedArrivalTimestamp, // Use processed value only
+        rating: data.rating || null,
+        review: data.review || null,
       };
       
       // Remove undefined fields to avoid JSON issues (but keep null values)
@@ -282,6 +284,25 @@ app.patch("/requests/:id", async (req, res) => {
       // إذا تم إرسال null أو string فارغ، قم بحذف technicianId من الطلب
       updateData.technicianId = admin.firestore.FieldValue.delete();
       console.log(`👤 Removing technicianId from request ${id}`);
+    }
+
+    // معالجة التقييم والمراجعة
+    if (req.body.rating !== undefined && req.body.rating !== null) {
+      const rating = Number(req.body.rating);
+      if (!isNaN(rating) && rating >= 1 && rating <= 5) {
+        updateData.rating = Math.floor(rating);
+        console.log(`⭐ Setting rating to: ${updateData.rating} for request ${id}`);
+      } else {
+        return res.status(400).json({
+          success: false,
+          error: "التقييم يجب أن يكون بين 1 و 5"
+        });
+      }
+    }
+
+    if (req.body.review !== undefined) {
+      updateData.review = req.body.review || null;
+      console.log(`📝 Setting review for request ${id}`);
     }
 
     // معالجة وقت الوصول المتوقع
@@ -493,6 +514,71 @@ app.post("/technicians", async (req, res) => {
 });
 
 // عرض الفنيين
+// حساب متوسط التقييمات لكل فني
+app.get("/technicians/ratings", async (req, res) => {
+  try {
+    console.log("⭐ Fetching technician ratings...");
+    
+    // جلب جميع الطلبات المكتملة التي لها تقييم
+    const completedRequests = await db.collection("requests")
+      .where("status", "==", "completed")
+      .where("rating", ">", 0)
+      .get();
+
+    // حساب متوسط التقييم لكل فني
+    const ratingsMap = {};
+    
+    completedRequests.docs.forEach(doc => {
+      const data = doc.data();
+      const techId = data.technicianId;
+      const rating = data.rating;
+      
+      if (techId && rating && rating >= 1 && rating <= 5) {
+        if (!ratingsMap[techId]) {
+          ratingsMap[techId] = {
+            totalRating: 0,
+            count: 0,
+            reviews: []
+          };
+        }
+        ratingsMap[techId].totalRating += rating;
+        ratingsMap[techId].count += 1;
+        if (data.review) {
+          ratingsMap[techId].reviews.push({
+            rating: rating,
+            review: data.review,
+            orderId: doc.id,
+            createdAt: data.createdAt?.toDate?.()?.toISOString() || 
+                       data.createdAt?.seconds ? 
+                       new Date(data.createdAt.seconds * 1000).toISOString() : 
+                       null
+          });
+        }
+      }
+    });
+
+    // حساب المتوسط لكل فني
+    const result = {};
+    Object.keys(ratingsMap).forEach(techId => {
+      const data = ratingsMap[techId];
+      result[techId] = {
+        averageRating: data.count > 0 ? (data.totalRating / data.count).toFixed(2) : 0,
+        totalRatings: data.count,
+        reviews: data.reviews
+      };
+    });
+
+    console.log(`✅ Found ratings for ${Object.keys(result).length} technicians`);
+    res.json(result);
+  } catch (err) {
+    console.error("❌ Error fetching technician ratings:", err);
+    res.status(500).json({
+      success: false,
+      error: err.message || "فشل في جلب التقييمات"
+    });
+  }
+});
+
 app.get("/technicians", async (req, res) => {
   try {
     const snap = await db.collection("technicians")

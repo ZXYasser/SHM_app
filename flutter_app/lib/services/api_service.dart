@@ -134,4 +134,124 @@ class ApiService {
       return [];
     }
   }
+
+  // تحديث حالة الطلب (لإلغاء الطلب)
+  static Future<Map<String, dynamic>> updateRequestStatus(
+    String requestId,
+    String status,
+  ) async {
+    final url = Uri.parse(
+      '${AppConstants.baseUrl}${AppConstants.updateRequestEndpoint}/$requestId',
+    );
+
+    try {
+      print('📤 Updating request $requestId to status: $status');
+
+      final response = await http
+          .patch(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'status': status}),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      print('📥 Response status: ${response.statusCode}');
+      print('📥 Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        if (data['success'] == true) {
+          return {
+            'success': true,
+            'message': data['message'] ?? 'تم التحديث بنجاح',
+          };
+        } else {
+          return {
+            'success': false,
+            'error': data['error'] ?? 'فشل التحديث',
+          };
+        }
+      } else {
+        return {
+          'success': false,
+          'error': 'حدث خطأ في الخادم (${response.statusCode})',
+        };
+      }
+    } on TimeoutException {
+      return {
+        'success': false,
+        'error': 'انتهت مهلة الاتصال.',
+      };
+    } catch (e) {
+      print('❌ Error updating request: $e');
+      return {
+        'success': false,
+        'error': 'فشل الاتصال بالخادم.',
+      };
+    }
+  }
+
+  // إرسال التقييم والمراجعة
+  static Future<Map<String, dynamic>> submitRating(
+    String requestId,
+    int rating,
+    String? review,
+  ) async {
+    final url = Uri.parse(
+      '${AppConstants.baseUrl}${AppConstants.updateRequestEndpoint}/$requestId',
+    );
+
+    try {
+      print('⭐ Submitting rating for request $requestId: $rating stars');
+
+      final body = <String, dynamic>{
+        'rating': rating,
+      };
+      if (review != null && review.trim().isNotEmpty) {
+        body['review'] = review.trim();
+      }
+
+      final response = await http
+          .patch(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      print('📥 Response status: ${response.statusCode}');
+      print('📥 Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        if (data['success'] == true) {
+          return {
+            'success': true,
+            'message': data['message'] ?? 'تم إرسال التقييم بنجاح',
+          };
+        } else {
+          return {
+            'success': false,
+            'error': data['error'] ?? 'فشل إرسال التقييم',
+          };
+        }
+      } else {
+        return {
+          'success': false,
+          'error': 'حدث خطأ في الخادم (${response.statusCode})',
+        };
+      }
+    } on TimeoutException {
+      return {
+        'success': false,
+        'error': 'انتهت مهلة الاتصال.',
+      };
+    } catch (e) {
+      print('❌ Error submitting rating: $e');
+      return {
+        'success': false,
+        'error': 'فشل الاتصال بالخادم.',
+      };
+    }
+  }
 }
