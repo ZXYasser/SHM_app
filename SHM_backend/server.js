@@ -290,8 +290,27 @@ app.patch("/requests/:id", async (req, res) => {
     if (req.body.rating !== undefined && req.body.rating !== null) {
       const rating = Number(req.body.rating);
       if (!isNaN(rating) && rating >= 1 && rating <= 5) {
-        updateData.rating = Math.floor(rating);
-        console.log(`⭐ Setting rating to: ${updateData.rating} for request ${id}`);
+        // التأكد من أن الطلب له technicianId قبل حفظ التقييم
+        const docRef = db.collection("requests").doc(id);
+        const doc = await docRef.get();
+        if (doc.exists) {
+          const currentData = doc.data();
+          if (!currentData.technicianId || currentData.technicianId.trim() === '') {
+            console.log(`⚠️ Warning: Request ${id} has no technicianId, rating will be saved but won't appear in technician ratings`);
+            return res.status(400).json({
+              success: false,
+              error: "لا يمكن تقييم الطلب بدون فني معين"
+            });
+          } else {
+            updateData.rating = Math.floor(rating);
+            console.log(`⭐ Setting rating ${updateData.rating} for request ${id} (technician: ${currentData.technicianId})`);
+          }
+        } else {
+          return res.status(404).json({
+            success: false,
+            error: "الطلب غير موجود"
+          });
+        }
       } else {
         return res.status(400).json({
           success: false,
@@ -302,7 +321,9 @@ app.patch("/requests/:id", async (req, res) => {
 
     if (req.body.review !== undefined) {
       updateData.review = req.body.review || null;
-      console.log(`📝 Setting review for request ${id}`);
+      if (updateData.review) {
+        console.log(`📝 Setting review for request ${id}: ${updateData.review.substring(0, 50)}...`);
+      }
     }
 
     // معالجة وقت الوصول المتوقع
@@ -364,6 +385,11 @@ app.patch("/requests/:id", async (req, res) => {
     // Verify the update by reading the document back immediately
     const updatedDoc = await db.collection("requests").doc(id).get();
     const updatedData = updatedDoc.data();
+    
+    // Log rating if it was updated
+    if (updateData.rating) {
+      console.log(`✅ Rating saved: ${updatedData?.rating} for request ${id}, technicianId: ${updatedData?.technicianId || 'NULL'}`);
+    }
     
     // Extract estimatedArrivalMinutes for logging
     const savedEstimatedArrivalMinutes = updatedData?.estimatedArrivalMinutes;
@@ -519,62 +545,93 @@ app.get("/technicians/ratings", async (req, res) => {
   try {
     console.log("⭐ Fetching technician ratings...");
     
-    // جلب جميع الطلبات المكتملة التي لها تقييم
+    // جلب جميع الطلبات المكتملة (بدون where على rating لأن Firestore قد يحتاج index)
     const completedRequests = await db.collection("requests")
       .where("status", "==", "completed")
-      .where("rating", ">", 0)
       .get();
+
+    console.log(`📊 Found ${completedRequests.docs.length} completed requests`);
 
     // حساب متوسط التقييم لكل فني
     const ratingsMap = {};
     
     completedRequests.docs.forEach(doc => {
-      const data = doc.data();
-      const techId = data.technicianId;
-      const rating = data.rating;
-      
-      if (techId && rating && rating >= 1 && rating <= 5) {
-        if (!ratingsMap[techId]) {
-          ratingsMap[techId] = {
-            totalRating: 0,
-            count: 0,
-            reviews: []
-          };
+      try {
+        const data = doc.data();
+        const techId = data.technicianId;
+        const rating = data.rating;
+        
+        // Log for debugging
+        if (rating) {
+          console.log(`⭐ Request ${doc.id}: rating=${rating}, technicianId=${techId || 'NULL'}, status=${data.status}`);
         }
-        ratingsMap[techId].totalRating += rating;
-        ratingsMap[techId].count += 1;
-        if (data.review) {
-          ratingsMap[techId].reviews.push({
-            rating: rating,
-            review: data.review,
-            orderId: doc.id,
-            createdAt: data.createdAt?.toDate?.()?.toISOString() || 
-                       data.createdAt?.seconds ? 
-                       new Date(data.createdAt.seconds * 1000).toISOString() : 
-                       null
-          });
+        
+        // التحقق من وجود technicianId و rating صحيح
+        // التأكد من أن techId هو string قبل استخدام trim
+        const techIdStr = techId ? String(techId).trim() : '';
+        
+        if (techIdStr !== '' && rating != null && rating !== undefined) {
+          const ratingNum = Number(rating);
+          if (!isNaN(ratingNum) && ratingNum >= 1 && ratingNum <= 5) {
+            if (!ratingsMap[techIdStr]) {
+              ratingsMap[techIdStr] = {
+                totalRating: 0,
+                count: 0,
+                reviews: []
+              };
+            }
+            ratingsMap[techIdStr].totalRating += ratingNum;
+            ratingsMap[techIdStr].count += 1;
+            if (data.review && typeof data.review === 'string' && data.review.trim() !== '') {
+              ratingsMap[techIdStr].reviews.push({
+                rating: ratingNum,
+                review: data.review,
+                orderId: doc.id,
+                createdAt: data.createdAt?.toDate?.()?.toISOString() || 
+                           data.createdAt?.seconds ? 
+                           new Date(data.createdAt.seconds * 1000).toISOString() : 
+                           null
+              });
+            }
+            console.log(`✅ Added rating ${ratingNum} for technician ${techIdStr}`);
+          }
+        } else {
+          if (rating && !techIdStr) {
+            console.log(`⚠️ Request ${doc.id} has rating ${rating} but no technicianId`);
+          }
         }
+      } catch (err) {
+        console.error(`❌ Error processing request ${doc.id}:`, err.message);
+        // Continue processing other requests
       }
     });
 
     // حساب المتوسط لكل فني
     const result = {};
     Object.keys(ratingsMap).forEach(techId => {
-      const data = ratingsMap[techId];
-      result[techId] = {
-        averageRating: data.count > 0 ? (data.totalRating / data.count).toFixed(2) : 0,
-        totalRatings: data.count,
-        reviews: data.reviews
-      };
+      try {
+        const data = ratingsMap[techId];
+        result[techId] = {
+          averageRating: data.count > 0 ? parseFloat((data.totalRating / data.count).toFixed(2)) : 0,
+          totalRatings: data.count,
+          reviews: data.reviews || []
+        };
+        console.log(`📊 Technician ${techId}: average=${result[techId].averageRating}, count=${data.count}`);
+      } catch (err) {
+        console.error(`❌ Error processing technician ${techId}:`, err.message);
+      }
     });
 
     console.log(`✅ Found ratings for ${Object.keys(result).length} technicians`);
+    console.log(`📋 Result:`, JSON.stringify(result, null, 2));
     res.json(result);
   } catch (err) {
     console.error("❌ Error fetching technician ratings:", err);
+    console.error("❌ Error stack:", err.stack);
     res.status(500).json({
       success: false,
-      error: err.message || "فشل في جلب التقييمات"
+      error: err.message || "فشل في جلب التقييمات",
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
   }
 });

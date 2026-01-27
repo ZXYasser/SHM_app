@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FiUserPlus, FiTrash2, FiUsers, FiPhone, FiLock, FiRefreshCw, FiStar } from "react-icons/fi";
+import { FiUserPlus, FiTrash2, FiUsers, FiPhone, FiLock, FiRefreshCw, FiStar, FiX } from "react-icons/fi";
 import { API_URL } from "./config";
 
 export default function Technicians() {
@@ -11,6 +11,7 @@ export default function Technicians() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [ratings, setRatings] = useState({});
+  const [selectedTechForRatings, setSelectedTechForRatings] = useState(null); // الفني الحالي لعرض تقييماته
 
   // =============== Load Technicians ===============
   const loadTechnicians = async () => {
@@ -298,13 +299,24 @@ export default function Technicians() {
                       </td>
                       <td className="p-4 text-gray-600">{formatDate(t)}</td>
                       <td className="p-4 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        {/* زر عرض صفحة التقييمات الخاصة بالفني */}
                         <button
-                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition shadow-sm hover:shadow-md flex items-center gap-2 mx-auto"
+                          className="bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg transition shadow-sm hover:shadow-md flex items-center gap-1 text-sm"
+                          onClick={() => setSelectedTechForRatings({ tech: t, ratingData: techRating, techId })}
+                        >
+                          <FiStar size={14} className="text-amber-500" />
+                          <span>عرض التقييمات</span>
+                        </button>
+                        {/* زر حذف الفني (كما هو سابقاً) */}
+                        <button
+                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition shadow-sm hover:shadow-md flex items-center gap-2"
                           onClick={() => deleteTechnician(techId)}
                         >
                           <FiTrash2 size={16} />
                           حذف
                         </button>
+                      </div>
                       </td>
                     </tr>
                   );
@@ -314,6 +326,123 @@ export default function Technicians() {
           </div>
         )}
       </div>
+
+      {/* صفحة / نافذة التقييمات الخاصة بفني معيّن */}
+      {selectedTechForRatings && (
+        <div className="fixed inset-0 bg-black/40 z-40 flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[80vh] overflow-hidden flex flex-col" dir="rtl">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <FiUsers className="text-blue-600" size={20} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800">
+                    تقييمات الفني: {selectedTechForRatings.tech?.name || "غير معروف"}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    رقم الجوال: {selectedTechForRatings.tech?.phone || "غير محدد"}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedTechForRatings(null)}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+                title="إغلاق"
+              >
+                <FiX size={22} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 overflow-y-auto">
+              {(!selectedTechForRatings.ratingData ||
+                !selectedTechForRatings.ratingData.reviews ||
+                selectedTechForRatings.ratingData.reviews.length === 0) && (
+                <div className="text-center py-12 text-gray-400">
+                  لا توجد تقييمات لهذا الفني حتى الآن.
+                </div>
+              )}
+
+              {selectedTechForRatings.ratingData &&
+                selectedTechForRatings.ratingData.reviews &&
+                selectedTechForRatings.ratingData.reviews.length > 0 && (
+                  <>
+                    {/* ملخص عام */}
+                    <div className="flex flex-wrap items-center gap-4 mb-6">
+                      <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-4 py-2 rounded-xl">
+                        <FiStar className="text-amber-500" size={20} />
+                        <span className="text-lg font-semibold text-gray-800">
+                          متوسط التقييم:
+                        </span>
+                        <span className="text-xl font-bold text-gray-800">
+                          {parseFloat(selectedTechForRatings.ratingData.averageRating).toFixed(1)}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          ({selectedTechForRatings.ratingData.totalRatings} تقييم)
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* جدول التقييمات */}
+                    <div className="overflow-x-auto border border-gray-200 rounded-xl">
+                      <table className="w-full text-right text-sm">
+                        <thead className="bg-gray-50 text-gray-700">
+                          <tr>
+                            <th className="p-3 font-semibold">معرّف الطلب</th>
+                            <th className="p-3 font-semibold">التقييم</th>
+                            <th className="p-3 font-semibold">التعليق</th>
+                            <th className="p-3 font-semibold">تاريخ التقييم</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedTechForRatings.ratingData.reviews.map((r, idx) => {
+                            let formattedDate = "غير محدد";
+                            if (r.createdAt) {
+                              const d = new Date(r.createdAt);
+                              if (!isNaN(d.getTime())) {
+                                formattedDate = d.toLocaleString("ar-SA");
+                              }
+                            }
+                            return (
+                              <tr
+                                key={r.orderId || idx}
+                                className="border-t border-gray-100 hover:bg-gray-50 transition-colors"
+                              >
+                                <td className="p-3 text-gray-700">
+                                  <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                                    {r.orderId || "غير معروف"}
+                                  </span>
+                                </td>
+                                <td className="p-3">
+                                  <div className="inline-flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100">
+                                    <FiStar className="text-amber-500" size={14} />
+                                    <span className="font-semibold text-gray-800">
+                                      {r.rating}/5
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="p-3 text-gray-700">
+                                  {r.review && r.review.trim() !== ""
+                                    ? r.review
+                                    : <span className="text-gray-400">لا يوجد تعليق</span>}
+                                </td>
+                                <td className="p-3 text-gray-600 text-xs">
+                                  {formattedDate}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
