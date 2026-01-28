@@ -6,6 +6,7 @@ class ServiceRequest {
   final double latitude;
   final double longitude;
   final int? price; // السعر بالريال
+  final String? userId; // معرف المستخدم (Firebase UID)
 
   ServiceRequest({
     required this.serviceType,
@@ -15,6 +16,7 @@ class ServiceRequest {
     required this.latitude,
     required this.longitude,
     this.price,
+    this.userId,
   });
 
   Map<String, dynamic> toJson() {
@@ -26,6 +28,7 @@ class ServiceRequest {
       "latitude": latitude,
       "longitude": longitude,
       "price": price,
+      "userId": userId,
     };
   }
 
@@ -38,6 +41,7 @@ class ServiceRequest {
       latitude: (json['latitude'] ?? 0.0).toDouble(),
       longitude: (json['longitude'] ?? 0.0).toDouble(),
       price: json['price'] != null ? (json['price'] as num).toInt() : null,
+      userId: json['userId']?.toString(),
     );
   }
 }
@@ -118,7 +122,7 @@ class OrderModel {
     // معالجة estimatedArrivalTimestamp
     DateTime? parseEstimatedArrivalTimestamp(dynamic dateValue) {
       if (dateValue == null) return null;
-      
+
       if (dateValue is String) {
         try {
           return DateTime.parse(dateValue);
@@ -126,11 +130,11 @@ class OrderModel {
           return null;
         }
       }
-      
+
       if (dateValue is DateTime) {
         return dateValue;
       }
-      
+
       if (dateValue is Map) {
         if (dateValue['seconds'] != null) {
           final seconds = dateValue['seconds'] as int;
@@ -144,7 +148,7 @@ class OrderModel {
           return DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
         }
       }
-      
+
       return null;
     }
 
@@ -160,11 +164,15 @@ class OrderModel {
       return null;
     }
 
-    final estimatedMinutes = parseEstimatedArrivalMinutes(json['estimatedArrivalMinutes']);
-    
+    final estimatedMinutes = parseEstimatedArrivalMinutes(
+      json['estimatedArrivalMinutes'],
+    );
+
     // Debug logging
     if (json['id'] != null) {
-      print('🔍 Parsing Order ${json['id']}: estimatedArrivalMinutes=${json['estimatedArrivalMinutes']} (type: ${json['estimatedArrivalMinutes'].runtimeType}) -> parsed: $estimatedMinutes');
+      print(
+        '🔍 Parsing Order ${json['id']}: estimatedArrivalMinutes=${json['estimatedArrivalMinutes']} (type: ${json['estimatedArrivalMinutes'].runtimeType}) -> parsed: $estimatedMinutes',
+      );
     }
 
     // معالجة rating
@@ -194,7 +202,9 @@ class OrderModel {
       createdAt: parseCreatedAt(json['createdAt']),
       price: json['price'] != null ? (json['price'] as num).toInt() : null,
       estimatedArrivalMinutes: estimatedMinutes,
-      estimatedArrivalTimestamp: parseEstimatedArrivalTimestamp(json['estimatedArrivalTimestamp']),
+      estimatedArrivalTimestamp: parseEstimatedArrivalTimestamp(
+        json['estimatedArrivalTimestamp'],
+      ),
       technicianId: json['technicianId'],
       rating: parseRating(json['rating']),
       review: json['review'],

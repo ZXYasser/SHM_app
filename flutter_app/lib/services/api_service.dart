@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../utils/constants.dart';
 import '../models/request_model.dart';
@@ -75,42 +76,43 @@ class ApiService {
       print('❌ ClientException: ${e.message}');
       String errorMessage;
       if (kIsWeb) {
-        errorMessage = 'فشل الاتصال بالخادم.\n\n'
+        errorMessage =
+            'فشل الاتصال بالخادم.\n\n'
             'تأكد من:\n'
             '1. أن الخادم يعمل على http://localhost:3000\n'
             '2. قم بتشغيل: cd SHM_backend && node server.js';
       } else {
-        errorMessage = 'فشل الاتصال بالخادم.\n\n'
+        errorMessage =
+            'فشل الاتصال بالخادم.\n\n'
             'تأكد من:\n'
             '1. أن الخادم يعمل على ${AppConstants.baseUrl}\n'
             '2. أنك متصل بنفس الشبكة';
       }
-      return {
-        'success': false,
-        'error': errorMessage,
-      };
+      return {'success': false, 'error': errorMessage};
     } catch (e) {
       print('❌ Error: $e');
       String errorMessage;
       if (kIsWeb) {
-        errorMessage = 'فشل الاتصال بالخادم.\n\n'
+        errorMessage =
+            'فشل الاتصال بالخادم.\n\n'
             'تأكد من أن الخادم يعمل على http://localhost:3000\n'
             'قم بتشغيل: cd SHM_backend && node server.js';
       } else {
-        errorMessage = 'فشل الاتصال بالخادم. تأكد من أن الخادم يعمل وأنك متصل بالشبكة.';
+        errorMessage =
+            'فشل الاتصال بالخادم. تأكد من أن الخادم يعمل وأنك متصل بالشبكة.';
       }
-      return {
-        'success': false,
-        'error': errorMessage,
-      };
+      return {'success': false, 'error': errorMessage};
     }
   }
 
   // جلب جميع الطلبات
   static Future<List<dynamic>> getRequests() async {
-    final url = Uri.parse(
-      '${AppConstants.baseUrl}${AppConstants.requestsEndpoint}',
-    );
+    // إذا كان المستخدم مسجلاً دخولاً نرسل userId لتصفية الطلبات في الخلفية
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uriString = uid != null && uid.isNotEmpty
+        ? '${AppConstants.baseUrl}${AppConstants.requestsEndpoint}?userId=$uid'
+        : '${AppConstants.baseUrl}${AppConstants.requestsEndpoint}';
+    final url = Uri.parse(uriString);
 
     try {
       final response = await http.get(url).timeout(const Duration(seconds: 10));
@@ -121,7 +123,9 @@ class ApiService {
         if (data is List && data.isNotEmpty) {
           print('📥 Fetched ${data.length} requests');
           for (var request in data.take(5)) {
-            print('   Request ${request['id']}: status=${request['status']}, estimatedArrivalMinutes=${request['estimatedArrivalMinutes']}, estimatedArrivalTimestamp=${request['estimatedArrivalTimestamp']}');
+            print(
+              '   Request ${request['id']}: status=${request['status']}, estimatedArrivalMinutes=${request['estimatedArrivalMinutes']}, estimatedArrivalTimestamp=${request['estimatedArrivalTimestamp']}',
+            );
           }
         }
         return data;
@@ -166,10 +170,7 @@ class ApiService {
             'message': data['message'] ?? 'تم التحديث بنجاح',
           };
         } else {
-          return {
-            'success': false,
-            'error': data['error'] ?? 'فشل التحديث',
-          };
+          return {'success': false, 'error': data['error'] ?? 'فشل التحديث'};
         }
       } else {
         return {
@@ -178,16 +179,10 @@ class ApiService {
         };
       }
     } on TimeoutException {
-      return {
-        'success': false,
-        'error': 'انتهت مهلة الاتصال.',
-      };
+      return {'success': false, 'error': 'انتهت مهلة الاتصال.'};
     } catch (e) {
       print('❌ Error updating request: $e');
-      return {
-        'success': false,
-        'error': 'فشل الاتصال بالخادم.',
-      };
+      return {'success': false, 'error': 'فشل الاتصال بالخادم.'};
     }
   }
 
@@ -204,9 +199,7 @@ class ApiService {
     try {
       print('⭐ Submitting rating for request $requestId: $rating stars');
 
-      final body = <String, dynamic>{
-        'rating': rating,
-      };
+      final body = <String, dynamic>{'rating': rating};
       if (review != null && review.trim().isNotEmpty) {
         body['review'] = review.trim();
       }
@@ -242,16 +235,10 @@ class ApiService {
         };
       }
     } on TimeoutException {
-      return {
-        'success': false,
-        'error': 'انتهت مهلة الاتصال.',
-      };
+      return {'success': false, 'error': 'انتهت مهلة الاتصال.'};
     } catch (e) {
       print('❌ Error submitting rating: $e');
-      return {
-        'success': false,
-        'error': 'فشل الاتصال بالخادم.',
-      };
+      return {'success': false, 'error': 'فشل الاتصال بالخادم.'};
     }
   }
 }

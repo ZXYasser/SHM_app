@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import '../models/request_model.dart';
 import '../services/api_service.dart';
@@ -91,7 +92,7 @@ class _RequestScreenState extends State<RequestScreen> {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      
+
       final lat = position.latitude;
       final lng = position.longitude;
 
@@ -185,6 +186,9 @@ class _RequestScreenState extends State<RequestScreen> {
     // الحصول على سعر الخدمة
     final servicePrice = AppConstants.getServicePrice(widget.serviceType);
 
+    // الحصول على معرف المستخدم الحالي (Firebase UID) إن وُجد
+    final String? userId = FirebaseAuth.instance.currentUser?.uid;
+
     final request = ServiceRequest(
       serviceType: widget.serviceType,
       carModel: _carModelController.text.trim(),
@@ -193,6 +197,7 @@ class _RequestScreenState extends State<RequestScreen> {
       latitude: _latitude!,
       longitude: _longitude!,
       price: servicePrice, // إضافة السعر
+      userId: userId,
     );
 
     final result = await ApiService.submitRequest(request);

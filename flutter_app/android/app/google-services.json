@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1027150286660",
+    "project_id": "shm-app-9927d",
+    "storage_bucket": "shm-app-9927d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1027150286660:android:234bc06dc5c5263316d111",
+        "android_client_info": {
+          "package_name": "com.example.shm_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAT_AcH7VyM0JpaJGbZcmvnFOg_0KP9RDA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

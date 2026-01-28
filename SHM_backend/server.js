@@ -81,7 +81,7 @@ app.post("/new-request", async (req, res) => {
     console.log("📥 Received new request:", JSON.stringify(req.body, null, 2));
 
     // التحقق من البيانات المطلوبة
-    const { serviceType, carModel, plateNumber, notes, latitude, longitude, price } = req.body;
+    const { serviceType, carModel, plateNumber, notes, latitude, longitude, price, userId } = req.body;
     
     console.log("💰 Price received:", price, "Type:", typeof price);
     
@@ -112,6 +112,7 @@ app.post("/new-request", async (req, res) => {
       latitude: Number(latitude),
       longitude: Number(longitude),
       price: finalPrice, // إضافة السعر (null للخدمات المتغيرة)
+      userId: userId || null, // ربط الطلب بالمستخدم (إن وُجد)
       status: "new",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -147,11 +148,17 @@ app.post("/new-request", async (req, res) => {
 // جميع الطلبات
 app.get("/requests", async (req, res) => {
   try {
-    console.log("📥 Fetching all requests...");
+    const { userId } = req.query;
+    console.log("📥 Fetching requests...", userId ? `for userId=${userId}` : "(all requests)");
     
-    const snap = await db.collection("requests")
-      .orderBy("createdAt", "desc")
-      .get();
+    let query = db.collection("requests").orderBy("createdAt", "desc");
+
+    // إذا تم إرسال userId من تطبيق العميل، نرجع طلبات هذا المستخدم فقط
+    if (userId) {
+      query = query.where("userId", "==", userId);
+    }
+
+    const snap = await query.get();
 
     const list = snap.docs.map(doc => {
       const data = doc.data();
