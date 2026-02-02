@@ -151,16 +151,44 @@ app.get("/requests", async (req, res) => {
     const { userId } = req.query;
     console.log("📥 Fetching requests...", userId ? `for userId=${userId}` : "(all requests)");
     
-    let query = db.collection("requests").orderBy("createdAt", "desc");
-
-    // إذا تم إرسال userId من تطبيق العميل، نرجع طلبات هذا المستخدم فقط
+    // مهم: Firestore قد يتطلب Composite Index عند الجمع بين:
+    // where(userId == X) + orderBy(createdAt)
+    //
+    // لذلك:
+    // - في حالة وجود userId (تطبيق العميل): نجلب بالـ where فقط ثم نفرز بالـ code.
+    // - في حالة عدم وجود userId (Dashboard): نستخدم orderBy كما كان.
+    let snap;
     if (userId) {
-      query = query.where("userId", "==", userId);
+      snap = await db.collection("requests")
+        .where("userId", "==", userId)
+        .get();
+    } else {
+      snap = await db.collection("requests")
+        .orderBy("createdAt", "desc")
+        .get();
     }
 
-    const snap = await query.get();
+    // فرز النتائج لتطبيق العميل حسب createdAt (الأحدث أولاً)
+    // (لا يؤثر على Dashboard لأنه أصلاً يستخدم orderBy في الاستعلام)
+    const docs = userId
+      ? snap.docs.slice().sort((a, b) => {
+          const da = a.data();
+          const dbb = b.data();
+          const toMs = (v) => {
+            if (!v) return 0;
+            if (typeof v.toDate === 'function') return v.toDate().getTime();
+            if (typeof v.seconds === 'number') return v.seconds * 1000;
+            if (typeof v === 'string') {
+              const t = Date.parse(v);
+              return isNaN(t) ? 0 : t;
+            }
+            return 0;
+          };
+          return toMs(dbb.createdAt) - toMs(da.createdAt);
+        })
+      : snap.docs;
 
-    const list = snap.docs.map(doc => {
+    const list = docs.map(doc => {
       const data = doc.data();
       
       // Log raw data for debugging - only for requests with estimatedArrivalMinutes or in_progress status
