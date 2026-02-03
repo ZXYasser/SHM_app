@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'orders_screen.dart';
+import 'menu_screen.dart';
 import 'profile_screen.dart';
 import '../utils/constants.dart';
 
@@ -17,6 +18,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const OrdersScreen(),
+    const MenuScreen(),
     const ProfileScreen(),
   ];
 
@@ -58,6 +60,10 @@ class _MainScreenState extends State<MainScreen> {
               BottomNavigationBarItem(
                 icon: Icon(Icons.history_rounded),
                 label: 'طلباتي',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.menu_rounded),
+                label: 'القائمة',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.person_rounded),

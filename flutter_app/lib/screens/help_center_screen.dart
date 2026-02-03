@@ -26,13 +26,11 @@ class HelpCenterScreen extends StatelessWidget {
       },
       {
         'question': 'هل يمكنني تتبع حالة طلبي؟',
-        'answer':
-            'نعم، يمكنك تتبع حالة طلبك من خلال صفحة "طلباتي" في التطبيق.',
+        'answer': 'نعم، يمكنك تتبع حالة طلبك من خلال صفحة "طلباتي" في التطبيق.',
       },
       {
         'question': 'ماذا أفعل إذا لم يصل الفني؟',
-        'answer':
-            'يمكنك الاتصال بنا على الرقم 0501234567 أو من خلال مركز المساعدة في التطبيق.',
+        'answer': 'يمكنك التواصل معنا من خلال قائمة "تواصل معنا" في التطبيق.',
       },
     ];
 
@@ -72,10 +70,7 @@ class HelpCenterScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     const Text(
                       'نحن هنا لمساعدتك',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                     const SizedBox(height: 20),
                     Row(
@@ -86,7 +81,8 @@ class HelpCenterScreen extends StatelessWidget {
                               // TODO: Implement phone call
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content: Text('ميزة الاتصال قيد التطوير')),
+                                  content: Text('ميزة الاتصال قيد التطوير'),
+                                ),
                               );
                             },
                             icon: const Icon(Icons.phone),
@@ -105,7 +101,8 @@ class HelpCenterScreen extends StatelessWidget {
                               // TODO: Implement WhatsApp
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content: Text('ميزة واتساب قيد التطوير')),
+                                  content: Text('ميزة واتساب قيد التطوير'),
+                                ),
                               );
                             },
                             icon: const Icon(Icons.chat),
@@ -127,10 +124,7 @@ class HelpCenterScreen extends StatelessWidget {
             // FAQ Section
             const Text(
               'أسئلة شائعة',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             ...faqs.asMap().entries.map((entry) {
@@ -143,13 +137,15 @@ class HelpCenterScreen extends StatelessWidget {
   }
 
   Widget _buildFAQCard(
-      BuildContext context, Map<String, dynamic> faq, int index, Color color) {
+    BuildContext context,
+    Map<String, dynamic> faq,
+    int index,
+    Color color,
+  ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ExpansionTile(
         leading: Container(
           padding: const EdgeInsets.all(8),
@@ -161,10 +157,7 @@ class HelpCenterScreen extends StatelessWidget {
         ),
         title: Text(
           faq['question'],
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         children: [
           Padding(
@@ -183,4 +176,3 @@ class HelpCenterScreen extends StatelessWidget {
     );
   }
 }
-

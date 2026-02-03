@@ -366,7 +366,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       Expanded(
                         child: Row(
                           children: [
-                            if (groupServices.length > 0)
+                            if (groupServices.isNotEmpty)
                               Expanded(
                                 child: Padding(
                                   padding: const EdgeInsets.only(
@@ -1047,9 +1047,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             children: [
               Icon(Icons.star_rounded, color: Colors.amber[700], size: 24),
               const SizedBox(width: 12),
-              const Text(
-                'لماذا سهم؟',
-                style: TextStyle(
+              Text(
+                'لماذا ${AppConstants.appName}؟',
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.3,
@@ -1295,7 +1295,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'سهم خدمة موثوقة وسريعة',
+                    '${AppConstants.appName} خدمة موثوقة وسريعة',
                     textAlign: TextAlign.left,
                     style: TextStyle(
                       fontSize: 24,

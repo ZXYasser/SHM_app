@@ -5,7 +5,6 @@ import 'saved_cars_screen.dart';
 import 'saved_addresses_screen.dart';
 import 'payment_methods_screen.dart';
 import 'settings_screen.dart';
-import 'help_center_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -93,9 +92,9 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
-                    'مستخدم سهم',
-                    style: TextStyle(
+                  Text(
+                    AppConstants.appName,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -200,20 +199,6 @@ class ProfileScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => const SettingsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  _buildProfileTile(
-                    icon: Icons.help_outline,
-                    title: 'مركز المساعدة',
-                    subtitle: 'أسئلة شائعة واتصل بنا',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HelpCenterScreen(),
                         ),
                       );
                     },
@@ -326,56 +311,6 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  void _showComingSoon(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('قريباً'),
-        content: const Text('هذه الميزة قيد التطوير وستكون متاحة قريباً.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('حسناً'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAboutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('عن سهم'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              AppConstants.appName,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(AppConstants.appTagline),
-            const SizedBox(height: 16),
-            const Text('الإصدار: 1.0.0'),
-            const SizedBox(height: 8),
-            const Text(
-              'خدمة بنشر وبطاريات متنقلة في المدينة المنورة',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('حسناً'),
-          ),
-        ],
       ),
     );
   }

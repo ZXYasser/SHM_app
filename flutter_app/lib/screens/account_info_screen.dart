@@ -10,9 +10,9 @@ class AccountInfoScreen extends StatefulWidget {
 
 class _AccountInfoScreenState extends State<AccountInfoScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController(text: 'مستخدم سهم');
-  final _phoneController = TextEditingController(text: '0501234567');
-  final _emailController = TextEditingController(text: 'user@example.com');
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
 
   @override
   void dispose() {
@@ -174,10 +174,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                   ),
                   child: const Text(
                     'حفظ التغييرات',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -204,9 +201,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: color),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: color, width: 2),
@@ -215,4 +210,3 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
     );
   }
 }
-

@@ -1,11 +1,11 @@
 {
-    "name": "SHM_APP",
-    "short_name": "SHM_APP",
+    "name": "ورشة SHM",
+    "short_name": "ورشة SHM",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#000000",
     "theme_color": "#42A5F5",
-    "description": "A new Flutter project.",
+    "description": "ورشة SHM - نوصلك للحل. خدمة صيانة سيارات متنقلة.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

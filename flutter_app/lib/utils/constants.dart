@@ -25,7 +25,7 @@ class AppConstants {
   // ================================
   // ℹ App Info
   // ================================
-  static const String appName = 'سهم';
+  static const String appName = 'ورشة SHM';
   static const String appTagline = 'نوصلك للحل';
 
   // ================================

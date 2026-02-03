@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -8,8 +10,16 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// تحميل إعدادات keystore من ملف key.properties (يتم إنشاؤه خارج نظام التحكم بالنسخ)
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
+}
+
 android {
-    namespace = "com.example.shm_app"
+    // اسم الحزمة/الـ namespace النهائي للتطبيق
+    namespace = "com.shm.workshop"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"  // Updated to fix plugin compatibility
 
@@ -23,8 +33,8 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.shm_app"
+        // معرف التطبيق النهائي (Application ID) المستخدم في المتجر
+        applicationId = "com.shm.workshop"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         // minSdk = flutter.minSdkVersion
@@ -34,11 +44,30 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        // إعداد توقيع نسخة الإصدار (Release)
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                val storeFilePath = keystoreProperties["storeFile"] as String?
+                if (storeFilePath != null) {
+                    storeFile = file(storeFilePath)
+                }
+                storePassword = keystoreProperties["storePassword"] as String?
+                keyAlias = keystoreProperties["keyAlias"] as String?
+                keyPassword = keystoreProperties["keyPassword"] as String?
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // استخدام توقيع الإصدار إذا كان ملف key.properties موجوداً،
+            // وإلا الاستمرار باستخدام debug لتسهيل التطوير.
+            signingConfig = if (keystorePropertiesFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

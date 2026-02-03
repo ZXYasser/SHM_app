@@ -108,28 +108,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () => _showAboutDialog(context),
                   ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: Icon(Icons.privacy_tip_outlined, color: color),
-                    title: const Text('سياسة الخصوصية'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('سياسة الخصوصية قيد التطوير')),
-                      );
-                    },
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: Icon(Icons.description_outlined, color: color),
-                    title: const Text('شروط الاستخدام'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('شروط الاستخدام قيد التطوير')),
-                      );
-                    },
-                  ),
                 ],
               ),
             ),
@@ -193,7 +171,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('عن سهم'),
+        title: Text('عن ${AppConstants.appName}'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,4 +201,3 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 }
-

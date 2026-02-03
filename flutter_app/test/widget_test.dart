@@ -7,17 +7,16 @@
 
 import 'package:flutter_test/flutter_test.dart';
 
-import '../lib/main.dart';
+import 'package:SHM_app/main.dart';
+import 'package:SHM_app/utils/constants.dart';
 
 void main() {
-  testWidgets('App launches and shows splash screen', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('App launches and shows splash screen', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const SahmApp());
-
-    // Wait for the splash screen to appear
     await tester.pump();
 
-    // Verify that the app name appears (from splash screen)
-    expect(find.text('سهم'), findsOneWidget);
+    expect(find.text(AppConstants.appName), findsOneWidget);
   });
 }

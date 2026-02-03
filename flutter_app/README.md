@@ -1,4 +1,6 @@
-# SHM_APP
+# ورشة SHM
+
+تطبيق ورشة SHM - خدمة صيانة سيارات متنقلة (نوصلك للحل).
 
 A new Flutter project.
 

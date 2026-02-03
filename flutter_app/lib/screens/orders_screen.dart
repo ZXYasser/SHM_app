@@ -49,7 +49,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       for (var order in _orders) {
         final orderId = order.id ?? '';
         if (orderId.isEmpty) continue;
-        
+
         final lastStatus = _lastOrderStatuses[orderId];
         if (lastStatus != null && lastStatus != order.status) {
           if (order.status == 'in_progress') {
@@ -60,31 +60,31 @@ class _OrdersScreenState extends State<OrdersScreen> {
           } else if (order.status == 'completed') {
             _showStatusNotification(
               'تم إكمال طلبك',
-              'شكراً لاستخدامك خدمات سهم',
+              'شكراً لاستخدامك خدمات ${AppConstants.appName}',
             );
           } else if (order.status == 'cancelled') {
-            _showStatusNotification(
-              'تم إلغاء الطلب',
-              'تم إلغاء طلبك بنجاح',
-            );
+            _showStatusNotification('تم إلغاء الطلب', 'تم إلغاء طلبك بنجاح');
           }
         }
         _lastOrderStatuses[orderId] = order.status;
-        
+
         // Check for estimated arrival time changes
         final lastArrivalMinutes = _lastEstimatedArrivalMinutes[orderId];
         final currentArrivalMinutes = order.estimatedArrivalMinutes;
-        
+
         // Log for debugging
-        if (currentArrivalMinutes != null && currentArrivalMinutes != lastArrivalMinutes) {
-          print('🔔 Arrival time changed for order ${orderId}: $lastArrivalMinutes -> $currentArrivalMinutes');
+        if (currentArrivalMinutes != null &&
+            currentArrivalMinutes != lastArrivalMinutes) {
+          print(
+            '🔔 Arrival time changed for order $orderId: $lastArrivalMinutes -> $currentArrivalMinutes',
+          );
         }
-        
-        if (currentArrivalMinutes != null && 
+
+        if (currentArrivalMinutes != null &&
             lastArrivalMinutes != currentArrivalMinutes) {
           _showStatusNotification(
             'تم تحديث وقت الوصول',
-            'الفني سيصل خلال ${currentArrivalMinutes} دقيقة',
+            'الفني سيصل خلال $currentArrivalMinutes دقيقة',
           );
         }
         _lastEstimatedArrivalMinutes[orderId] = currentArrivalMinutes;
@@ -153,11 +153,13 @@ class _OrdersScreenState extends State<OrdersScreen> {
           final order = OrderModel.fromJson(json);
           // Debug: Log orders with estimatedArrivalMinutes
           if (order.estimatedArrivalMinutes != null) {
-            print('✅ Order ${order.id} has estimatedArrivalMinutes: ${order.estimatedArrivalMinutes}');
+            print(
+              '✅ Order ${order.id} has estimatedArrivalMinutes: ${order.estimatedArrivalMinutes}',
+            );
           }
           return order;
         }).toList();
-        
+
         setState(() {
           _orders = parsedOrders;
           _applyFilters();
@@ -558,18 +560,35 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                                     const SizedBox(height: 6),
                                                     // Price Badge
                                                     Padding(
-                                                      padding: const EdgeInsets.only(bottom: 4),
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            bottom: 4,
+                                                          ),
                                                       child: Container(
-                                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 8,
+                                                              vertical: 4,
+                                                            ),
                                                         decoration: BoxDecoration(
-                                                          color: order.price != null
+                                                          color:
+                                                              order.price !=
+                                                                  null
                                                               ? Colors.green[50]
-                                                              : Colors.orange[50],
-                                                          borderRadius: BorderRadius.circular(8),
+                                                              : Colors
+                                                                    .orange[50],
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                8,
+                                                              ),
                                                           border: Border.all(
-                                                            color: order.price != null
-                                                                ? Colors.green[300]!
-                                                                : Colors.orange[300]!,
+                                                            color:
+                                                                order.price !=
+                                                                    null
+                                                                ? Colors
+                                                                      .green[300]!
+                                                                : Colors
+                                                                      .orange[300]!,
                                                             width: 1,
                                                           ),
                                                         ),
@@ -579,10 +598,15 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                                               : 'حسب الكمية',
                                                           style: TextStyle(
                                                             fontSize: 12,
-                                                            fontWeight: FontWeight.bold,
-                                                            color: order.price != null
-                                                                ? Colors.green[700]
-                                                                : Colors.orange[700],
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color:
+                                                                order.price !=
+                                                                    null
+                                                                ? Colors
+                                                                      .green[700]
+                                                                : Colors
+                                                                      .orange[700],
                                                           ),
                                                         ),
                                                       ),
@@ -590,48 +614,82 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                                     // Estimated Arrival Time Badge
                                                     const SizedBox(height: 4),
                                                     Container(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 8,
+                                                            vertical: 4,
+                                                          ),
                                                       decoration: BoxDecoration(
-                                                        color: order.estimatedArrivalMinutes != null
+                                                        color:
+                                                            order.estimatedArrivalMinutes !=
+                                                                null
                                                             ? Colors.blue[50]
                                                             : Colors.grey[50],
-                                                        borderRadius: BorderRadius.circular(8),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              8,
+                                                            ),
                                                         border: Border.all(
-                                                          color: order.estimatedArrivalMinutes != null
-                                                              ? Colors.blue[300]!
-                                                              : Colors.grey[300]!,
+                                                          color:
+                                                              order.estimatedArrivalMinutes !=
+                                                                  null
+                                                              ? Colors
+                                                                    .blue[300]!
+                                                              : Colors
+                                                                    .grey[300]!,
                                                           width: 1,
                                                         ),
                                                       ),
                                                       child: Row(
-                                                        mainAxisSize: MainAxisSize.min,
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
                                                         children: [
                                                           Icon(
-                                                            order.estimatedArrivalMinutes != null
-                                                                ? Icons.access_time
-                                                                : Icons.schedule,
+                                                            order.estimatedArrivalMinutes !=
+                                                                    null
+                                                                ? Icons
+                                                                      .access_time
+                                                                : Icons
+                                                                      .schedule,
                                                             size: 14,
-                                                            color: order.estimatedArrivalMinutes != null
-                                                                ? Colors.blue[700]
-                                                                : Colors.grey[700],
+                                                            color:
+                                                                order.estimatedArrivalMinutes !=
+                                                                    null
+                                                                ? Colors
+                                                                      .blue[700]
+                                                                : Colors
+                                                                      .grey[700],
                                                           ),
-                                                          const SizedBox(width: 4),
+                                                          const SizedBox(
+                                                            width: 4,
+                                                          ),
                                                           Builder(
                                                             builder: (context) {
                                                               // Debug: Log the value
-                                                              if (order.estimatedArrivalMinutes != null) {
-                                                                print('🎯 Displaying estimatedArrivalMinutes for order ${order.id}: ${order.estimatedArrivalMinutes}');
+                                                              if (order
+                                                                      .estimatedArrivalMinutes !=
+                                                                  null) {
+                                                                print(
+                                                                  '🎯 Displaying estimatedArrivalMinutes for order ${order.id}: ${order.estimatedArrivalMinutes}',
+                                                                );
                                                               }
                                                               return Text(
-                                                                order.estimatedArrivalMinutes != null
+                                                                order.estimatedArrivalMinutes !=
+                                                                        null
                                                                     ? 'الوصول خلال ${order.estimatedArrivalMinutes} دقيقة'
                                                                     : 'سيتم تعيينه قريباً من الفني',
                                                                 style: TextStyle(
                                                                   fontSize: 12,
-                                                                  fontWeight: FontWeight.bold,
-                                                                  color: order.estimatedArrivalMinutes != null
-                                                                      ? Colors.blue[700]
-                                                                      : Colors.grey[700],
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  color:
+                                                                      order.estimatedArrivalMinutes !=
+                                                                          null
+                                                                      ? Colors
+                                                                            .blue[700]
+                                                                      : Colors
+                                                                            .grey[700],
                                                                 ),
                                                               );
                                                             },
@@ -836,10 +894,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: order.price != null ? Colors.green[50] : Colors.orange[50],
+                    color: order.price != null
+                        ? Colors.green[50]
+                        : Colors.orange[50],
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: order.price != null ? Colors.green[300]! : Colors.orange[300]!,
+                      color: order.price != null
+                          ? Colors.green[300]!
+                          : Colors.orange[300]!,
                       width: 2,
                     ),
                   ),
@@ -855,11 +917,15 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         ),
                       ),
                       Text(
-                        order.price != null ? '${order.price} ريال' : 'حسب الكمية',
+                        order.price != null
+                            ? '${order.price} ريال'
+                            : 'حسب الكمية',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: order.price != null ? Colors.green[700] : Colors.orange[700],
+                          color: order.price != null
+                              ? Colors.green[700]
+                              : Colors.orange[700],
                         ),
                       ),
                     ],
@@ -959,7 +1025,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     '${order.createdAt!.day}/${order.createdAt!.month}/${order.createdAt!.year} ${order.createdAt!.hour}:${order.createdAt!.minute.toString().padLeft(2, '0')}',
                   ),
                 ],
-                
+
                 // Cancel Order Button - فقط للطلبات قبل بدء التنفيذ
                 if (order.status == 'new') ...[
                   const SizedBox(height: 24),
@@ -971,7 +1037,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       icon: const Icon(Icons.cancel_outlined),
                       label: const Text(
                         'إلغاء الطلب',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
@@ -999,7 +1068,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.star, color: Colors.amber[700], size: 24),
+                            Icon(
+                              Icons.star,
+                              color: Colors.amber[700],
+                              size: 24,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               order.rating != null
@@ -1036,7 +1109,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             ),
                           ),
                         ],
-                        if (order.review != null && order.review!.isNotEmpty) ...[
+                        if (order.review != null &&
+                            order.review!.isNotEmpty) ...[
                           const SizedBox(height: 12),
                           Container(
                             padding: const EdgeInsets.all(12),
@@ -1089,9 +1163,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('تأكيد الإلغاء'),
           ),
         ],
@@ -1198,67 +1270,67 @@ class _OrdersScreenState extends State<OrdersScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: isSubmitting
-                  ? null
-                  : () => Navigator.pop(context),
+              onPressed: isSubmitting ? null : () => Navigator.pop(context),
               child: const Text('إلغاء'),
             ),
             ElevatedButton(
               onPressed: isSubmitting || selectedRating == 0
                   ? null
                   : () async {
-                    setDialogState(() {
-                      isSubmitting = true;
-                    });
+                      setDialogState(() {
+                        isSubmitting = true;
+                      });
 
-                    try {
-                      final result = await ApiService.submitRating(
-                        order.id!,
-                        selectedRating,
-                        reviewController.text.trim().isEmpty
-                            ? null
-                            : reviewController.text.trim(),
-                      );
-
-                      if (!mounted) return;
-
-                      if (result['success'] == true) {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text('شكراً لتقييمك!'),
-                            backgroundColor: Colors.green,
-                            behavior: SnackBarBehavior.floating,
-                          ),
+                      try {
+                        final result = await ApiService.submitRating(
+                          order.id!,
+                          selectedRating,
+                          reviewController.text.trim().isEmpty
+                              ? null
+                              : reviewController.text.trim(),
                         );
-                        _loadOrders(showLoading: false);
-                        Navigator.pop(context); // إغلاق dialog التفاصيل
-                      } else {
+
+                        if (!mounted) return;
+
+                        if (result['success'] == true) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('شكراً لتقييمك!'),
+                              backgroundColor: Colors.green,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                          _loadOrders(showLoading: false);
+                          Navigator.pop(context); // إغلاق dialog التفاصيل
+                        } else {
+                          setDialogState(() {
+                            isSubmitting = false;
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                result['error'] ?? 'فشل إرسال التقييم',
+                              ),
+                              backgroundColor: Colors.red,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (!mounted) return;
                         setDialogState(() {
                           isSubmitting = false;
                         });
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(result['error'] ?? 'فشل إرسال التقييم'),
+                            content: Text('حدث خطأ: $e'),
                             backgroundColor: Colors.red,
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
                       }
-                    } catch (e) {
-                      if (!mounted) return;
-                      setDialogState(() {
-                        isSubmitting = false;
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('حدث خطأ: $e'),
-                          backgroundColor: Colors.red,
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    }
-                  },
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber[600],
               ),
