@@ -3,7 +3,7 @@
     "short_name": "ورشة SHM",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#000000",
+    "background_color": "#FFFFFF",
     "theme_color": "#42A5F5",
     "description": "ورشة SHM - نوصلك للحل. خدمة صيانة سيارات متنقلة.",
     "orientation": "portrait-primary",

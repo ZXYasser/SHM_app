@@ -1295,7 +1295,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${AppConstants.appName} خدمة موثوقة وسريعة',
+                    ' سهم خدمة موثوقة سريعة',
                     textAlign: TextAlign.left,
                     style: TextStyle(
                       fontSize: 24,
