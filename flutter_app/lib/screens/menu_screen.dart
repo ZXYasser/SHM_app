@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../utils/constants.dart';
 import 'terms_screen.dart';
 import 'privacy_screen.dart';
+import 'returns_policy_screen.dart';
 import 'help_center_screen.dart';
 
 /// شاشة القائمة: الأحكام والشروط، الأسئلة الشائعة، تواصل معنا، سياسة الخصوصية، عن التطبيق.
@@ -90,6 +91,20 @@ class MenuScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const PrivacyScreen()),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          _buildMenuItem(
+            context,
+            icon: Icons.swap_horiz_rounded,
+            title: 'الاستبدال والاسترجاع',
+            subtitle: 'سياسة الإلغاء والاسترجاع',
+            color: color,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ReturnsPolicyScreen()),
               );
             },
           ),

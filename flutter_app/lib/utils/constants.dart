@@ -28,6 +28,11 @@ class AppConstants {
   static const String appName = 'سهم';
   static const String appTagline = 'نوصلك للحل';
 
+  /// للعرض في الشروط وسياسة الاسترجاع — املأها عند التوفر
+  static const String supportEmail = ''; // مثال: support@shm.sa
+  static const String supportPhone = ''; // مثال: 0500000000
+  static const String supportWebsite = ''; // مثال: https://shm.sa
+
   // ================================
   // 🛠 Services
   // ================================
