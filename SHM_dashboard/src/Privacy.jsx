@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Privacy() {
   return (
     <div className="w-full flex flex-col items-center px-4 pt-6 pb-20">
@@ -42,7 +44,8 @@ export default function Privacy() {
             <section className="pb-8 border-b border-gray-100 last:border-0 last:pb-0">
               <h2 className="text-lg font-bold text-gray-800 mb-3 text-center">ما حقوقك؟</h2>
               <p className="text-gray-600 leading-relaxed text-center">
-                يمكنك طلب الاطلاع على بياناتك أو تصحيحها أو حذفها عبر التواصل معنا من داخل التطبيق (تواصل معنا / القائمة).
+                يمكنك طلب الاطلاع على بياناتك أو تصحيحها أو حذفها عبر التواصل معنا من داخل التطبيق (تواصل معنا / القائمة). لطلب حذف حسابك وجميع بياناتك، يرجى اتباع الخطوات في صفحة{" "}
+                <Link to="/delete-account" className="text-blue-600 hover:text-blue-700 font-medium underline">طلب حذف الحساب والبيانات</Link>.
               </p>
             </section>
 

@@ -65,6 +65,11 @@ export default function Footer() {
                   الشروط والأحكام
                 </Link>
               </li>
+              <li>
+                <Link to="/delete-account" className="text-gray-600 hover:text-blue-600 transition">
+                  طلب حذف الحساب والبيانات
+                </Link>
+              </li>
             </ul>
           </div>
 

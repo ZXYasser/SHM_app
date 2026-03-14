@@ -5,6 +5,7 @@ import Home from "./Home";
 import Privacy from "./Privacy";
 import Terms from "./Terms";
 import Returns from "./Returns";
+import DeleteAccount from "./DeleteAccount";
 import DashboardGate from "./DashboardGate";
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/returns" element={<Returns />} />
+          <Route path="/delete-account" element={<DeleteAccount />} />
         </Route>
 
         {/* لوحة الإدارة — محمية بتسجيل الدخول */}
